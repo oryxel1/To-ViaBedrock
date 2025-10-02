@@ -4,14 +4,12 @@ import io.netty.buffer.ByteBuf;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import org.cloudburstmc.protocol.bedrock.codec.BedrockCodecHelper;
-import org.cloudburstmc.protocol.bedrock.codec.v291.serializer.MoveEntityAbsoluteSerializer_v291;
 import org.cloudburstmc.protocol.bedrock.packet.MoveEntityAbsolutePacket;
 import org.cloudburstmc.protocol.common.util.VarInts;
-
-import static org.cloudburstmc.protocol.common.util.Preconditions.checkNotNull;
+import oxy.toviabedrock.codec.v274.serializer.MoveEntityAbsoluteSerializer_v274;
 
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class MoveEntityAbsoluteSerializer_v261 extends MoveEntityAbsoluteSerializer_v291 {
+public class MoveEntityAbsoluteSerializer_v261 extends MoveEntityAbsoluteSerializer_v274 {
     public static final MoveEntityAbsoluteSerializer_v261 INSTANCE = new MoveEntityAbsoluteSerializer_v261();
 
     @Override

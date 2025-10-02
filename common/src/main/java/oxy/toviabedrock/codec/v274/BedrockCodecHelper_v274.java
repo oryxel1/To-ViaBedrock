@@ -1,4 +1,4 @@
-package oxy.toviabedrock.codec.v261;
+package oxy.toviabedrock.codec.v274;
 
 import io.netty.buffer.ByteBuf;
 import org.cloudburstmc.protocol.bedrock.codec.EntityDataTypeMap;
@@ -10,8 +10,8 @@ import org.cloudburstmc.protocol.common.util.VarInts;
 
 import static org.cloudburstmc.protocol.common.util.Preconditions.checkNotNull;
 
-public class BedrockCodecHelper_v261 extends BedrockCodecHelper_v291 {
-    public BedrockCodecHelper_v261(EntityDataTypeMap entityData, TypeMap<Class<?>> gameRulesTypes) {
+public class BedrockCodecHelper_v274 extends BedrockCodecHelper_v291 {
+    public BedrockCodecHelper_v274(EntityDataTypeMap entityData, TypeMap<Class<?>> gameRulesTypes) {
         super(entityData, gameRulesTypes);
     }
 

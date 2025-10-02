@@ -7,7 +7,15 @@ version = '1.0'
 
 repositories {
     mavenCentral()
+    maven {url = "https://repo.opencollab.dev/main/"}
 }
 
 dependencies {
+    implementation(project(":common"))
+
+    implementation("org.cloudburstmc.protocol:bedrock-connection:3.0.0.Beta8-20250929.213851-8")
+    implementation("org.projectlombok:lombok:1.18.36")
+    annotationProcessor("org.projectlombok:lombok:1.18.36")
+
+    testImplementation("org.cloudburstmc.protocol:bedrock-connection:3.0.0.Beta8-20250929.213851-8")
 }

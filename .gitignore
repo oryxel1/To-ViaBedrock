@@ -1,3 +1,6 @@
 .gradle/
 .idea/
 run/
+build/
+common/build/
+proxy/build/
