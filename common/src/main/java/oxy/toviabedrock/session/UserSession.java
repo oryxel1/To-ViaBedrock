@@ -22,7 +22,7 @@ public abstract class UserSession {
     }
 
     @SuppressWarnings("unchecked")
-    public <T extends UserStorage> T get(Class<?> storageClass) {
-        return (T) this.storages.get(storageClass);
+    public <T extends UserStorage> T get(Class<T> klass) {
+        return (T) this.storages.get(klass);
     }
 }
