@@ -1,0 +1,13 @@
+plugins {
+    id 'java'
+}
+
+group = 'org.oryxel.toviabedrock'
+version = '1.0'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+}
