@@ -1,4 +1,4 @@
-package org.oryxel.protocol.codec.v261;
+package oxy.toviabedrock.codec.v261;
 
 import io.netty.buffer.ByteBuf;
 import org.cloudburstmc.protocol.bedrock.codec.BedrockCodec;
@@ -12,7 +12,7 @@ import org.cloudburstmc.protocol.bedrock.data.entity.EntityFlag;
 import org.cloudburstmc.protocol.bedrock.packet.*;
 import org.cloudburstmc.protocol.bedrock.transformer.FlagTransformer;
 import org.cloudburstmc.protocol.common.util.TypeMap;
-import org.oryxel.protocol.codec.v261.serializer.*;
+import oxy.toviabedrock.codec.v261.serializer.*;
 
 // Kinda weird how an old protocol extends a newer one eh? Well since Cloudburst already implemented 1.7.0 so do this is easier.
 public class Bedrock_v261 extends Bedrock_v291 {

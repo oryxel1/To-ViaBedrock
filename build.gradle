@@ -2,5 +2,5 @@ plugins {
     id 'java'
 }
 
-group = 'org.oryxel.toviabedrock'
+group = 'oxy.toviabedrock'
 version = '1.0-SNAPSHOT'

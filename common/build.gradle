@@ -2,11 +2,15 @@ plugins {
     id 'java'
 }
 
-group = 'org.oryxel.toviabedrock'
+group = 'oxy.toviabedrock'
 
 repositories {
     mavenCentral()
+    maven {url = "https://repo.opencollab.dev/main/"}
 }
 
 dependencies {
+    implementation("org.cloudburstmc.protocol:bedrock-connection:3.0.0.Beta8-20250929.213851-8")
+    implementation("org.projectlombok:lombok:1.18.36")
+    annotationProcessor("org.projectlombok:lombok:1.18.36")
 }

@@ -1,4 +1,4 @@
-package org.oryxel.protocol.codec.v261.serializer;
+package oxy.toviabedrock.codec.v261.serializer;
 
 import io.netty.buffer.ByteBuf;
 import lombok.AccessLevel;

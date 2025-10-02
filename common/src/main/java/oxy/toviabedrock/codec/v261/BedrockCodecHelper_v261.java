@@ -1,4 +1,4 @@
-package org.oryxel.protocol.codec.v261;
+package oxy.toviabedrock.codec.v261;
 
 import io.netty.buffer.ByteBuf;
 import org.cloudburstmc.protocol.bedrock.codec.EntityDataTypeMap;
