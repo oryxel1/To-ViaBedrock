@@ -2,3 +2,4 @@ rootProject.name = 'TOViaBedrock'
 
 include 'protocol'
 include 'proxy'
+include 'common'
