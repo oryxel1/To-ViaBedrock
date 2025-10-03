@@ -19,6 +19,8 @@ public class ProtocolToProtocol {
     @Getter
     private final BedrockCodec translatedCodec;
 
+    private final List<Class<? extends BedrockPacket>> ignoredClientBounds = new ArrayList<>();
+    private final List<Class<? extends BedrockPacket>> ignoredServerBounds = new ArrayList<>();
     private final List<BedrockPacketType> directPassthroughClientBounds = new ArrayList<>();
     private final List<BedrockPacketType> directPassthroughServerBounds = new ArrayList<>();
     private final Map<Class<? extends BedrockPacket>, Consumer<WrappedBedrockPacket>> mappedClientBounds = new HashMap<>();
@@ -51,26 +53,35 @@ public class ProtocolToProtocol {
     }
 
     public void ignoreClientbound(Class<? extends BedrockPacket> klass) {
-        this.mappedClientBounds.put(klass, null);
+        this.ignoredClientBounds.add(klass);
     }
 
     public void ignoreServerbound(Class<? extends BedrockPacket> klass) {
-        this.mappedServerBounds.put(klass, null);
+        this.ignoredServerBounds.add(klass);
     }
 
     public void registerClientbound(Class<? extends BedrockPacket> klass, Consumer<WrappedBedrockPacket> consumer) {
+        if (this.mappedClientBounds.containsKey(klass)) {
+            this.mappedClientBounds.put(klass, this.mappedClientBounds.get(klass).andThen(consumer));
+            return;
+        }
+
         this.mappedClientBounds.put(klass, consumer);
     }
 
     public void registerServerbound(Class<? extends BedrockPacket> klass, Consumer<WrappedBedrockPacket> consumer) {
+        if (this.mappedServerBounds.containsKey(klass)) {
+            this.mappedServerBounds.put(klass, this.mappedServerBounds.get(klass).andThen(consumer));
+            return;
+        }
+
         this.mappedServerBounds.put(klass, consumer);
     }
 
     public boolean passthroughClientbound(final WrappedBedrockPacket wrapped) {
-        final boolean exist = this.mappedServerBounds.containsKey(wrapped.getPacket().getClass());
         final Consumer<WrappedBedrockPacket> translator = this.mappedClientBounds.get(wrapped.getPacket().getClass());
         if (translator == null) {
-            if (!exist) {
+            if (!this.ignoredClientBounds.contains(wrapped.getPacket().getClass())) {
                 if (this.directPassthroughClientBounds.contains(wrapped.getPacket().getPacketType())) {
                     return true;
                 }
@@ -85,10 +96,9 @@ public class ProtocolToProtocol {
     }
 
     public boolean passthroughServerbound(final WrappedBedrockPacket wrapped) {
-        final boolean exist = this.mappedServerBounds.containsKey(wrapped.getPacket().getClass());
         final Consumer<WrappedBedrockPacket> translator = this.mappedServerBounds.get(wrapped.getPacket().getClass());
         if (translator == null) {
-            if (!exist) {
+            if (!this.ignoredServerBounds.contains(wrapped.getPacket().getClass())) {
                 if (this.directPassthroughServerBounds.contains(wrapped.getPacket().getPacketType())) {
                     return true;
                 }

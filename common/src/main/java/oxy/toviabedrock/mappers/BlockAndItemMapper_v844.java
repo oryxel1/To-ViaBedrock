@@ -6,6 +6,7 @@ import io.netty.buffer.Unpooled;
 import org.cloudburstmc.protocol.bedrock.codec.BedrockCodec;
 import org.cloudburstmc.protocol.bedrock.data.BlockChangeEntry;
 import org.cloudburstmc.protocol.bedrock.packet.LevelChunkPacket;
+import org.cloudburstmc.protocol.bedrock.packet.StartGamePacket;
 import org.cloudburstmc.protocol.bedrock.packet.UpdateBlockPacket;
 import org.cloudburstmc.protocol.bedrock.packet.UpdateSubChunkBlocksPacket;
 import org.cloudburstmc.protocol.common.util.VarInts;
@@ -33,6 +34,12 @@ public class BlockAndItemMapper_v844 extends ProtocolToProtocol {
 
     @Override
     protected void registerProtocol() {
+        this.registerClientbound(StartGamePacket.class, wrapped -> {
+            final StartGamePacket packet = (StartGamePacket) wrapped.getPacket();
+            // Bypass BDS block registry checksum, also no idea how this is calculated anyway.
+            packet.setBlockRegistryChecksum(0);
+        });
+
         this.registerClientbound(UpdateBlockPacket.class, wrapped -> {
             final UpdateBlockPacket packet = (UpdateBlockPacket) wrapped.getPacket();
             packet.setDefinition(new UnknownBlockDefinition(this.mappedBlockIds.getOrDefault(packet.getDefinition().getRuntimeId(), packet.getDefinition().getRuntimeId())));

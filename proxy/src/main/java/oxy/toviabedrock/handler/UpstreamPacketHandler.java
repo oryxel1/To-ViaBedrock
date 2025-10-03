@@ -58,7 +58,7 @@ public class UpstreamPacketHandler implements BedrockPacketHandler {
         packet = wrapped.getPacket();
 
         if (!wrapped.isCancelled()) {
-            System.out.println("Passthrough severbound: " + packet.getPacketType());
+            System.out.println("Passthrough serverbound: " + packet.getPacketType());
             this.user.sendDownstreamPacket(packet, false);
         }
         return PacketSignal.HANDLED;
@@ -120,7 +120,7 @@ public class UpstreamPacketHandler implements BedrockPacketHandler {
             return PacketSignal.HANDLED;
         }
 
-        // Response with a requestion network settings packet.
+        // Response with a network settings packet.
         NetworkSettingsPacket networkSettingsPacket = new NetworkSettingsPacket();
         networkSettingsPacket.setCompressionThreshold(0);
         networkSettingsPacket.setCompressionAlgorithm(PacketCompressionAlgorithm.ZLIB);
