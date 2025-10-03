@@ -58,7 +58,7 @@ public class UpstreamPacketHandler implements BedrockPacketHandler {
         packet = wrapped.getPacket();
 
         if (!wrapped.isCancelled()) {
-            System.out.println("Passthrough serverbound: " + packet.getPacketType());
+//            System.out.println("Passthrough serverbound: " + packet.getPacketType());
             this.user.sendDownstreamPacket(packet, false);
         }
         return PacketSignal.HANDLED;

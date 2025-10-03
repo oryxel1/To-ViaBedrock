@@ -103,7 +103,9 @@ public class BlockAndItemMapper_v844 extends ProtocolToProtocol {
             final ByteBuf newBuffer = ByteBufAllocator.DEFAULT.ioBuffer(packet.getData().capacity());
             final ByteBuf buffer = Unpooled.wrappedBuffer(packet.getData());
             try {
-                readChunkSectionAndTranslate(buffer, newBuffer);
+                for (int i = 0; i < subChunksCount; i++) {
+                    readChunkSectionAndTranslate(buffer, newBuffer);
+                }
 
                 // Write the rest, we only handle the new blocks.
                 newBuffer.writeBytes(buffer);
