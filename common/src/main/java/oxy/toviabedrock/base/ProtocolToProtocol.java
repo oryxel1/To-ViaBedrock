@@ -1,5 +1,6 @@
 package oxy.toviabedrock.base;
 
+import lombok.Getter;
 import org.cloudburstmc.protocol.bedrock.codec.BedrockCodec;
 import org.cloudburstmc.protocol.bedrock.packet.BedrockPacket;
 import org.cloudburstmc.protocol.bedrock.packet.BedrockPacketType;
@@ -13,7 +14,9 @@ import java.util.Map;
 import java.util.function.Consumer;
 
 public class ProtocolToProtocol {
+    @Getter
     private final BedrockCodec originalCodec;
+    @Getter
     private final BedrockCodec translatedCodec;
 
     private final List<BedrockPacketType> directPassthroughClientBounds = new ArrayList<>();
@@ -29,7 +32,7 @@ public class ProtocolToProtocol {
     }
 
     public void init(UserSession session) {}
-    public void registerProtocol() {}
+    protected void registerProtocol() {}
 
     public void unmapDirectlyClientbound(BedrockPacketType type) {
         this.directPassthroughClientBounds.remove(type);
@@ -63,41 +66,39 @@ public class ProtocolToProtocol {
         this.mappedServerBounds.put(klass, consumer);
     }
 
-    public BedrockPacket passthroughClientbound(UserSession session, BedrockPacket packet) {
-        final boolean exist = this.mappedServerBounds.containsKey(packet.getClass());
-        final Consumer<WrappedBedrockPacket> translator = this.mappedClientBounds.get(packet.getClass());
+    public boolean passthroughClientbound(final WrappedBedrockPacket wrapped) {
+        final boolean exist = this.mappedServerBounds.containsKey(wrapped.getPacket().getClass());
+        final Consumer<WrappedBedrockPacket> translator = this.mappedClientBounds.get(wrapped.getPacket().getClass());
         if (translator == null) {
             if (!exist) {
-                if (this.directPassthroughClientBounds.contains(packet.getPacketType())) {
-                    return packet;
+                if (this.directPassthroughClientBounds.contains(wrapped.getPacket().getPacketType())) {
+                    return true;
                 }
 
-                ToViaBedrock.getLogger().warning("Server sent an packet that we don't have a translator for: " + packet.getClass() + "!");
+                ToViaBedrock.getLogger().warning("Server sent an packet that we don't have a translator for: " + wrapped.getPacket().getClass() + "!");
             }
-            return null;
+            return false;
         }
 
-        final WrappedBedrockPacket wrapped = new WrappedBedrockPacket(session, packet, false);
         translator.accept(wrapped);
-        return wrapped.isCancelled() ? null : wrapped.getPacket();
+        return true;
     }
 
-    public BedrockPacket passthroughServerbound(UserSession session, BedrockPacket packet) {
-        final boolean exist = this.mappedServerBounds.containsKey(packet.getClass());
-        final Consumer<WrappedBedrockPacket> translator = this.mappedServerBounds.get(packet.getClass());
+    public boolean passthroughServerbound(final WrappedBedrockPacket wrapped) {
+        final boolean exist = this.mappedServerBounds.containsKey(wrapped.getPacket().getClass());
+        final Consumer<WrappedBedrockPacket> translator = this.mappedServerBounds.get(wrapped.getPacket().getClass());
         if (translator == null) {
             if (!exist) {
-                if (this.directPassthroughServerBounds.contains(packet.getPacketType())) {
-                    return packet;
+                if (this.directPassthroughServerBounds.contains(wrapped.getPacket().getPacketType())) {
+                    return true;
                 }
 
-                ToViaBedrock.getLogger().warning("Client sent an packet that we don't have a translator for: " + packet.getClass() + "!");
+                ToViaBedrock.getLogger().warning("Client sent an packet that we don't have a translator for: " + wrapped.getPacket().getClass() + "!");
             }
-            return null;
+            return false;
         }
 
-        final WrappedBedrockPacket wrapped = new WrappedBedrockPacket(session, packet, false);
         translator.accept(wrapped);
-        return wrapped.isCancelled() ? null : wrapped.getPacket();
+        return true;
     }
 }

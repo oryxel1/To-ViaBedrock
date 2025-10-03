@@ -13,7 +13,7 @@ public class Protocol282to274 extends ProtocolToProtocol {
     }
 
     @Override
-    public void registerProtocol() {
+    protected void registerProtocol() {
         Arrays.stream(BedrockPacketType.values()).forEach(this::mapDirectlyServerbound);
         Arrays.stream(BedrockPacketType.values()).forEach(this::mapDirectlyClientbound);
         

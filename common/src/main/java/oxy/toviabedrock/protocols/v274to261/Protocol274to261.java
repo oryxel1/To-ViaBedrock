@@ -21,7 +21,7 @@ public class Protocol274to261 extends ProtocolToProtocol {
     }
 
     @Override
-    public void registerProtocol() {
+    protected void registerProtocol() {
         Arrays.stream(BedrockPacketType.values()).forEach(this::mapDirectlyServerbound);
         Arrays.stream(BedrockPacketType.values()).forEach(this::mapDirectlyClientbound);
         this.ignoreClientbound(UpdateBlockSyncedPacket.class);

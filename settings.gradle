@@ -1,4 +1,4 @@
-rootProject.name = 'TOViaBedrock'
+rootProject.name = 'To-ViaBedrock'
 
 include 'common'
 include 'proxy'
