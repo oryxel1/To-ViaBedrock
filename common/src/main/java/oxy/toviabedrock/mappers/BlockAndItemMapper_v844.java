@@ -5,13 +5,16 @@ import io.netty.buffer.ByteBufAllocator;
 import io.netty.buffer.Unpooled;
 import org.cloudburstmc.protocol.bedrock.codec.BedrockCodec;
 import org.cloudburstmc.protocol.bedrock.data.BlockChangeEntry;
+import org.cloudburstmc.protocol.bedrock.data.SubChunkData;
 import org.cloudburstmc.protocol.bedrock.packet.*;
 import org.cloudburstmc.protocol.common.util.VarInts;
 import oxy.toviabedrock.base.ProtocolToProtocol;
 import oxy.toviabedrock.utils.MathUtils;
 import oxy.toviabedrock.utils.definition.UnknownBlockDefinition;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class BlockAndItemMapper_v844 extends ProtocolToProtocol {
@@ -97,23 +100,15 @@ public class BlockAndItemMapper_v844 extends ProtocolToProtocol {
                 return;
             }
 
-            byte[] payload;
             final ByteBuf newBuffer = ByteBufAllocator.DEFAULT.ioBuffer(packet.getData().capacity());
             final ByteBuf buffer = Unpooled.wrappedBuffer(packet.getData());
             try {
-                for (int i = 0; i < subChunksCount; i++) {
-                    final byte version = buffer.readByte();
-                    newBuffer.writeByte(version);
-
-                    switch (version) {
-                        case 8, 9 -> translatePaletteV89(version, buffer, newBuffer);
-                    }
-                }
+                readChunkSectionAndTranslate(buffer, newBuffer);
 
                 // Write the rest, we only handle the new blocks.
                 newBuffer.writeBytes(buffer);
 
-                payload = new byte[newBuffer.readableBytes()];
+                byte[] payload = new byte[newBuffer.readableBytes()];
                 newBuffer.readBytes(payload);
 
                 LevelChunkPacket levelChunkPacket = new LevelChunkPacket();
@@ -130,11 +125,66 @@ public class BlockAndItemMapper_v844 extends ProtocolToProtocol {
                 wrapped.setPacket(levelChunkPacket);
             } catch (Exception ignored) {
                 wrapped.cancel();
-                ignored.printStackTrace();
+//                ignored.printStackTrace();
             } finally {
                 newBuffer.release();
             }
         });
+
+        this.registerClientbound(SubChunkPacket.class, wrapped -> {
+            final SubChunkPacket packet = (SubChunkPacket) wrapped.getPacket();
+
+            final List<SubChunkData> subChunks = new ArrayList<>();
+            for (SubChunkData chunkData : packet.getSubChunks()) {
+                final ByteBuf buffer = Unpooled.wrappedBuffer(chunkData.getData());
+                final ByteBuf newBuffer = ByteBufAllocator.DEFAULT.ioBuffer(buffer.capacity());
+                try {
+                    readChunkSectionAndTranslate(buffer, newBuffer);
+
+                    // Write the rest, we only handle the new blocks.
+                    newBuffer.writeBytes(buffer);
+
+                    byte[] payload = new byte[newBuffer.readableBytes()];
+                    newBuffer.readBytes(payload);
+
+                    final SubChunkData data = new SubChunkData();
+                    data.setPosition(chunkData.getPosition());
+                    data.setData(Unpooled.wrappedBuffer(payload));
+                    data.setResult(chunkData.getResult());
+                    data.setHeightMapType(chunkData.getHeightMapType());
+                    data.setHeightMapData(chunkData.getHeightMapData() == null ? null : Unpooled.wrappedBuffer(chunkData.getHeightMapData().copy()));
+                    data.setRenderHeightMapType(chunkData.getRenderHeightMapType());
+                    data.setRenderHeightMapData(chunkData.getRenderHeightMapData() == null ? null : Unpooled.wrappedBuffer(chunkData.getRenderHeightMapData().copy()));
+                    data.setCacheEnabled(chunkData.isCacheEnabled());
+                    data.setBlobId(chunkData.getBlobId());
+
+                    subChunks.add(data);
+                } catch (Exception ignored) {
+                    wrapped.cancel();
+                    ignored.printStackTrace();
+                    return;
+                } finally {
+                    newBuffer.release();
+                }
+            }
+
+            final SubChunkPacket subChunkPacket = new SubChunkPacket();
+            subChunkPacket.setCacheEnabled(packet.isCacheEnabled());
+            subChunkPacket.setDimension(packet.getDimension());
+            subChunkPacket.setCenterPosition(packet.getCenterPosition());
+            subChunkPacket.setSubChunks(subChunks);
+
+            wrapped.setPacket(subChunkPacket);
+        });
+    }
+
+    private void readChunkSectionAndTranslate(ByteBuf buffer, ByteBuf newBuffer) {
+        final byte version = buffer.readByte();
+        newBuffer.writeByte(version);
+
+        switch (version) {
+            case 8, 9 -> translatePaletteV89(version, buffer, newBuffer);
+        }
     }
 
     private void translatePaletteV89(int version, ByteBuf buffer, ByteBuf newBuffer) {
