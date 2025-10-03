@@ -5,10 +5,7 @@ import io.netty.buffer.ByteBufAllocator;
 import io.netty.buffer.Unpooled;
 import org.cloudburstmc.protocol.bedrock.codec.BedrockCodec;
 import org.cloudburstmc.protocol.bedrock.data.BlockChangeEntry;
-import org.cloudburstmc.protocol.bedrock.packet.LevelChunkPacket;
-import org.cloudburstmc.protocol.bedrock.packet.StartGamePacket;
-import org.cloudburstmc.protocol.bedrock.packet.UpdateBlockPacket;
-import org.cloudburstmc.protocol.bedrock.packet.UpdateSubChunkBlocksPacket;
+import org.cloudburstmc.protocol.bedrock.packet.*;
 import org.cloudburstmc.protocol.common.util.VarInts;
 import oxy.toviabedrock.base.ProtocolToProtocol;
 import oxy.toviabedrock.utils.MathUtils;
@@ -34,6 +31,11 @@ public class BlockAndItemMapper_v844 extends ProtocolToProtocol {
 
     @Override
     protected void registerProtocol() {
+        this.registerServerbound(ClientCacheStatusPacket.class, wrapped -> {
+            ClientCacheStatusPacket packet = (ClientCacheStatusPacket) wrapped.getPacket();
+            packet.setSupported(false);
+        });
+
         this.registerClientbound(StartGamePacket.class, wrapped -> {
             final StartGamePacket packet = (StartGamePacket) wrapped.getPacket();
             // Bypass BDS block registry checksum, also no idea how this is calculated anyway.
