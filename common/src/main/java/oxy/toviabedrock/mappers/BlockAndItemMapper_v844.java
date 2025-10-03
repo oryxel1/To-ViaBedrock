@@ -5,6 +5,8 @@ import io.netty.buffer.ByteBufAllocator;
 import io.netty.buffer.Unpooled;
 import org.cloudburstmc.protocol.bedrock.codec.BedrockCodec;
 import org.cloudburstmc.protocol.bedrock.data.BlockChangeEntry;
+import org.cloudburstmc.protocol.bedrock.data.LevelEvent;
+import org.cloudburstmc.protocol.bedrock.data.LevelEventType;
 import org.cloudburstmc.protocol.bedrock.data.SubChunkData;
 import org.cloudburstmc.protocol.bedrock.packet.*;
 import org.cloudburstmc.protocol.common.util.VarInts;
@@ -32,8 +34,23 @@ public class BlockAndItemMapper_v844 extends ProtocolToProtocol {
     protected void mapItem() {
     }
 
+    private final List<LevelEventType> BLOCK_PARTICLE_EVENTS = List.of(
+            LevelEvent.PARTICLE_BREAK_BLOCK_DOWN, LevelEvent.PARTICLE_BREAK_BLOCK_UP,
+            LevelEvent.PARTICLE_BREAK_BLOCK_NORTH, LevelEvent.PARTICLE_BREAK_BLOCK_SOUTH,
+            LevelEvent.PARTICLE_BREAK_BLOCK_WEST, LevelEvent.PARTICLE_BREAK_BLOCK_EAST,
+            LevelEvent.PARTICLE_DESTROY_BLOCK, LevelEvent.PARTICLE_DESTROY_BLOCK_NO_SOUND,
+            LevelEvent.PARTICLE_BLOCK_EXPLOSION, LevelEvent.PARTICLE_DENY_BLOCK,
+            LevelEvent.PARTICLE_CRACK_BLOCK
+    );
     @Override
     protected void registerProtocol() {
+        this.registerClientbound(LevelEventPacket.class, wrapped -> {
+            final LevelEventPacket packet = (LevelEventPacket) wrapped.getPacket();
+            if (BLOCK_PARTICLE_EVENTS.contains(packet.getType())) {
+                packet.setData(this.mappedBlockIds.getOrDefault(packet.getData(), packet.getData()));
+            }
+        });
+
         this.registerServerbound(ClientCacheStatusPacket.class, wrapped -> {
             ClientCacheStatusPacket packet = (ClientCacheStatusPacket) wrapped.getPacket();
             packet.setSupported(false);
