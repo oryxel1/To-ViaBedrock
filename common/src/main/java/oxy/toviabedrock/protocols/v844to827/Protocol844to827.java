@@ -7,7 +7,7 @@ import org.cloudburstmc.protocol.bedrock.codec.v844.Bedrock_v844;
 import org.cloudburstmc.protocol.bedrock.data.ExperimentData;
 import org.cloudburstmc.protocol.bedrock.data.definitions.SimpleItemDefinition;
 import org.cloudburstmc.protocol.bedrock.packet.BedrockPacketType;
-import org.cloudburstmc.protocol.bedrock.packet.StartGamePacket;
+import org.cloudburstmc.protocol.bedrock.packet.ResourcePackStackPacket;
 import oxy.toviabedrock.mappers.BlockAndItemMapper_v844;
 
 import java.util.Arrays;
@@ -43,8 +43,16 @@ public class Protocol844to827 extends BlockAndItemMapper_v844 {
 
     @Override
     protected void mapItem() {
-        // TODO: Implement the rest as custom item.
-        this.mappedItemDefinition.put("minecraft:iron_chain", definition -> new SimpleItemDefinition("minecraft:chain", definition.getRuntimeId(), definition.getVersion(), definition.isComponentBased(), definition.getComponentData()));
+        this.itemIdentifierToRemapper.put("minecraft:iron_chain", definition -> new SimpleItemDefinition("minecraft:chain", definition.getRuntimeId(), definition.getVersion(), definition.isComponentBased(), definition.getComponentData()));
+
+        this.itemIdentifierToMapped.put("minecraft:oxidized_copper_chain", "minecraft:iron_chain");
+        this.itemIdentifierToMapped.put("minecraft:waxed_weathered_copper_chain", "minecraft:iron_chain");
+        this.itemIdentifierToMapped.put("minecraft:waxed_exposed_copper_chain", "minecraft:iron_chain");
+        this.itemIdentifierToMapped.put("minecraft:waxed_oxidized_copper_chain", "minecraft:iron_chain");
+        this.itemIdentifierToMapped.put("minecraft:waxed_copper_chain", "minecraft:iron_chain");
+        this.itemIdentifierToMapped.put("minecraft:exposed_copper_chain", "minecraft:iron_chain");
+        this.itemIdentifierToMapped.put("minecraft:weathered_copper_chain", "minecraft:iron_chain");
+        this.itemIdentifierToMapped.put("minecraft:copper_chain", "minecraft:iron_chain");
     }
 
     @Override
@@ -52,11 +60,10 @@ public class Protocol844to827 extends BlockAndItemMapper_v844 {
         Arrays.stream(BedrockPacketType.values()).forEach(this::mapDirectlyServerbound);
         Arrays.stream(BedrockPacketType.values()).forEach(this::mapDirectlyClientbound);
 
-        this.registerClientbound(StartGamePacket.class, wrapped -> {
-            final StartGamePacket packet = (StartGamePacket) wrapped.getPacket();
-            packet.setServerEngine(Bedrock_v827.CODEC.getMinecraftVersion());
+        this.registerClientbound(ResourcePackStackPacket.class, wrapped -> {
+            final ResourcePackStackPacket packet = (ResourcePackStackPacket) wrapped.getPacket();
 
-            // We want to add support for some of the new blocks :).
+            // We want to add support for some of the new blocks and items.
             packet.getExperiments().add(new ExperimentData("y_2025_drop_3", true));
         });
 

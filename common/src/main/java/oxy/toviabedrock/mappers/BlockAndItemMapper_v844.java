@@ -3,19 +3,27 @@ package oxy.toviabedrock.mappers;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
 import io.netty.buffer.Unpooled;
+import org.cloudburstmc.nbt.NbtMap;
+import org.cloudburstmc.nbt.NbtMapBuilder;
+import org.cloudburstmc.nbt.NbtType;
 import org.cloudburstmc.protocol.bedrock.codec.BedrockCodec;
 import org.cloudburstmc.protocol.bedrock.data.BlockChangeEntry;
 import org.cloudburstmc.protocol.bedrock.data.LevelEvent;
 import org.cloudburstmc.protocol.bedrock.data.LevelEventType;
 import org.cloudburstmc.protocol.bedrock.data.SubChunkData;
+import org.cloudburstmc.protocol.bedrock.data.definitions.BlockDefinition;
 import org.cloudburstmc.protocol.bedrock.data.definitions.ItemDefinition;
-import org.cloudburstmc.protocol.bedrock.data.definitions.SimpleItemDefinition;
+import org.cloudburstmc.protocol.bedrock.data.inventory.CreativeItemData;
+import org.cloudburstmc.protocol.bedrock.data.inventory.ItemData;
 import org.cloudburstmc.protocol.bedrock.packet.*;
 import org.cloudburstmc.protocol.common.util.VarInts;
 import oxy.toviabedrock.base.ProtocolToProtocol;
+import oxy.toviabedrock.mappers.storage.ItemRemappingStorage_v844;
 import oxy.toviabedrock.session.UserSession;
 import oxy.toviabedrock.session.storage.impl.GameSessionStorage;
+import oxy.toviabedrock.utils.HashMapWithHashed;
 import oxy.toviabedrock.utils.MathUtils;
+import oxy.toviabedrock.utils.definition.TOVBItemData;
 import oxy.toviabedrock.utils.definition.UnknownBlockDefinition;
 
 import java.util.ArrayList;
@@ -27,7 +35,8 @@ public class BlockAndItemMapper_v844 extends ProtocolToProtocol {
     protected final Map<Integer, Integer> mappedBlockIds = new HashMap<>();
     protected final Map<Integer, Integer> mappedHashedBlockIds = new HashMap<>();
 
-    protected final Map<String, ItemRemapper> mappedItemDefinition = new HashMap<>();
+    protected final Map<String, ItemRemapper> itemIdentifierToRemapper = new HashMap<>();
+    protected final HashMapWithHashed<String, String> itemIdentifierToMapped = new HashMapWithHashed<>();
     public interface ItemRemapper {
         ItemDefinition remap(ItemDefinition definition);
     }
@@ -52,20 +61,75 @@ public class BlockAndItemMapper_v844 extends ProtocolToProtocol {
             LevelEvent.PARTICLE_BLOCK_EXPLOSION, LevelEvent.PARTICLE_DENY_BLOCK,
             LevelEvent.PARTICLE_CRACK_BLOCK
     );
+
+    @Override
+    public void init(UserSession session) {
+        session.put(new ItemRemappingStorage_v844(session));
+    }
+
     @Override
     protected void registerProtocol() {
+        // Item mapping part.
+        this.registerServerbound(InventoryTransactionPacket.class, wrapped -> {
+            final InventoryTransactionPacket packet = (InventoryTransactionPacket) wrapped.getPacket();
+            packet.setItemInHand(this.mapItemReversed(wrapped.session(), packet.getItemInHand()));
+            if (packet.getBlockDefinition() != null) {
+                packet.setBlockDefinition(new UnknownBlockDefinition(mapBlockId(wrapped.session(), packet.getBlockDefinition().getRuntimeId())));
+            }
+//            System.out.println(packet);
+        });
+
+        this.registerClientbound(CreativeContentPacket.class, wrapped -> {
+            final CreativeContentPacket packet = (CreativeContentPacket) wrapped.getPacket();
+            for (int i = 0; i < packet.getContents().size(); i++) {
+                final CreativeItemData creative = packet.getContents().get(i);
+                final ItemData itemData = creative.getItem();
+                final ItemData mapped = this.mapItem(wrapped.session(), itemData);
+
+                if (mapped != itemData) {
+                    packet.getContents().set(i, new CreativeItemData(mapped, creative.getNetId(), creative.getGroupId()));
+                }
+            }
+        });
+
+        this.registerClientbound(InventoryContentPacket.class, wrapped -> {
+            final InventoryContentPacket packet = (InventoryContentPacket) wrapped.getPacket();
+//            System.out.println("----------------------------");
+            for (int i = 0; i < packet.getContents().size(); i++) {
+                final ItemData itemData = packet.getContents().get(i);
+                final ItemData mapped = this.mapItem(wrapped.session(), itemData);
+//                if (itemData.getDefinition().getIdentifier().equals("minecraft:copper_chain")) {
+//                    System.out.println("Map: " + mapped + ", equals=" + (itemData == mapped));
+//                } else {
+//                    System.out.println(itemData.getDefinition());
+//                }
+
+                if (mapped != itemData) {
+                    packet.getContents().set(i, mapped);
+                }
+            }
+        });
+
+        this.registerClientbound(InventorySlotPacket.class, wrapped -> {
+            final InventorySlotPacket packet = (InventorySlotPacket) wrapped.getPacket();
+            packet.setItem(mapItem(wrapped.session(), packet.getItem()));
+        });
+
         this.registerClientbound(ItemComponentPacket.class, wrapped -> {
             final ItemComponentPacket packet = (ItemComponentPacket) wrapped.getPacket();
             for (int i = 0; i < packet.getItems().size(); i++) {
                 final ItemDefinition definition = packet.getItems().get(i);
-                final ItemRemapper remapper = this.mappedItemDefinition.get(definition.getIdentifier());
+                final ItemRemapper remapper = this.itemIdentifierToRemapper.get(definition.getIdentifier());
                 if (remapper != null) {
                     packet.getItems().set(i, remapper.remap(definition));
                 }
 
-//                System.out.println(definition);
+                wrapped.session().get(ItemRemappingStorage_v844.class).put(definition.getIdentifier(), definition);
+                System.out.println(definition);
             }
         });
+
+        // Block mapping part.
 
         this.registerClientbound(LevelEventPacket.class, wrapped -> {
             final LevelEventPacket packet = (LevelEventPacket) wrapped.getPacket();
@@ -267,6 +331,102 @@ public class BlockAndItemMapper_v844 extends ProtocolToProtocol {
                 VarInts.writeInt(newBuffer, mapBlockId(session, VarInts.readInt(buffer)));
             }
         }
+    }
+
+    private ItemData mapItem(UserSession session, ItemData data) {
+        if (data == null) {
+            return null;
+        }
+
+        final String identifier = this.itemIdentifierToMapped.get(data.getDefinition().getIdentifier());
+        if (identifier == null) {
+            return data;
+        }
+        final ItemDefinition mapped = session.get(ItemRemappingStorage_v844.class).getDefinition(identifier);
+        if (mapped == null) {
+            return data;
+        }
+
+        BlockDefinition definition = null;
+        if (data.getBlockDefinition() != null) {
+            definition = new UnknownBlockDefinition(mapBlockId(session, data.getBlockDefinition().getRuntimeId()));
+        }
+
+        final NbtMap originalTag = data.getTag() == null ? NbtMap.builder().build() : data.getTag();
+        final NbtMapBuilder nbtBuilder = originalTag.toBuilder();
+
+        NbtMapBuilder display = originalTag.containsKey("display") ? originalTag.getCompound("display").toBuilder() : NbtMap.builder();
+
+        int hashed = data.getDefinition().getIdentifier().hashCode();
+        if (display.build().containsKey("Lore")) {
+            List<String> lores = display.build().getList("lore", NbtType.STRING);
+            lores.add("§r§7Item mapped from: " + data.getDefinition().getIdentifier() + " (" + hashed + ").");
+            display.put("Lore", data.getDefinition().getIdentifier());
+        } else {
+            display.putList("Lore", NbtType.STRING, List.of("§r§7Item mapped from: " + data.getDefinition().getIdentifier() + " (" + hashed + ")."));
+        }
+        nbtBuilder.put("display", display.build());
+        nbtBuilder.put("TOVBHash", hashed);
+
+        return new TOVBItemData(mapped, data.getDamage(),
+                data.getCount(), nbtBuilder.build(), data.getCanPlace(),
+                data.getCanBreak(), data.getBlockingTicks(), definition, data.isUsingNetId(), data.getNetId());
+    }
+
+    // I know this is a bad idea since we should properly track the item instead but oh well.
+    // It works so who cares! Only BDS is *this* strict with item tag anyway!
+    private ItemData mapItemReversed(UserSession session, ItemData data) {
+        if (data == null) {
+            return null;
+        }
+
+        if (data.getTag() == null || data.getTag().isEmpty() || !data.getTag().containsKey("TOVBHash")) {
+            return data;
+        }
+
+//        System.out.println(data.getTag().getInt("TOVBHash"));
+        final String identifier = this.itemIdentifierToMapped.getHashed().get(data.getTag().getInt("TOVBHash"));
+        if (identifier == null) {
+//            System.out.println("Null!");
+            return data;
+        }
+        final ItemDefinition mapped = session.get(ItemRemappingStorage_v844.class).getDefinition(identifier);
+        if (mapped == null) {
+            return data;
+        }
+
+        BlockDefinition definition = null;
+        if (data.getBlockDefinition() != null) {
+            definition = new UnknownBlockDefinition(mapBlockId(session, data.getBlockDefinition().getRuntimeId()));
+        }
+
+        NbtMapBuilder tagBuilder = data.getTag().toBuilder();
+        if (data.getTag().containsKey("display")) {
+            final NbtMap display = data.getTag().getCompound("display");
+            final NbtMapBuilder displayNbt = display.toBuilder();
+
+            if (display.containsKey("Lore")) {
+                final List<String> lore = new ArrayList<>(display.getList("Lore", NbtType.STRING));
+                if (lore.size() == 1) {
+                    displayNbt.remove("Lore");
+                } else {
+                    final String lore1 = "§r§7Item mapped from: " + mapped.getIdentifier() + " (" + data.getTag().getInt("TOVBHash") + ").";
+                    lore.remove(lore1);
+                    displayNbt.putList("Lore", NbtType.STRING, lore);
+                }
+            }
+
+            if (!displayNbt.isEmpty()) {
+                tagBuilder.put("display", displayNbt.build());
+            } else {
+                tagBuilder.remove("display");
+            }
+        }
+        tagBuilder.remove("TOVBHash");
+
+        return new TOVBItemData(mapped, data.getDamage(),
+                data.getCount(), tagBuilder.build(), data.getCanPlace(),
+                data.getCanBreak(), data.getBlockingTicks(), definition, data.isUsingNetId(), data.getNetId());
     }
 
     private int mapBlockId(UserSession user, int id) {

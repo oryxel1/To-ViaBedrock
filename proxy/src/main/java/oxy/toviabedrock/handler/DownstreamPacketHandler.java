@@ -2,10 +2,13 @@ package oxy.toviabedrock.handler;
 
 import lombok.RequiredArgsConstructor;
 import org.cloudburstmc.protocol.bedrock.BedrockClientSession;
+import org.cloudburstmc.protocol.bedrock.data.definitions.ItemDefinition;
+import org.cloudburstmc.protocol.bedrock.data.definitions.SimpleItemDefinition;
 import org.cloudburstmc.protocol.bedrock.packet.*;
 import org.cloudburstmc.protocol.bedrock.util.EncryptionUtils;
 import org.cloudburstmc.protocol.bedrock.util.JsonUtils;
 import org.cloudburstmc.protocol.common.PacketSignal;
+import org.cloudburstmc.protocol.common.SimpleDefinitionRegistry;
 import org.jose4j.json.JsonUtil;
 import org.jose4j.json.internal.json_simple.JSONObject;
 import org.jose4j.jws.JsonWebSignature;
@@ -62,6 +65,34 @@ public class DownstreamPacketHandler implements BedrockPacketHandler {
     public PacketSignal handle(StartGamePacket packet) {
         final GameSessionStorage gameSession = this.user.get(GameSessionStorage.class);
         gameSession.setBlockNetworkIdsHashed(packet.isBlockNetworkIdsHashed());
+
+        if (this.session.getCodec().getProtocolVersion() < 776) {
+            SimpleDefinitionRegistry<ItemDefinition> itemDefinitions = SimpleDefinitionRegistry.<ItemDefinition>builder()
+                    .addAll(packet.getItemDefinitions())
+                    .add(new SimpleItemDefinition("minecraft:empty", 0, false))
+                    .build();
+
+            this.session.getPeer().getCodecHelper().setItemDefinitions(itemDefinitions);
+            this.user.getUpstreamPeer().getCodecHelper().setItemDefinitions(itemDefinitions);
+        }
+
+        return PacketSignal.UNHANDLED;
+    }
+
+    @Override
+    public PacketSignal handle(ItemComponentPacket packet) {
+        if (this.session.getCodec().getProtocolVersion() >= 776) {
+            SimpleDefinitionRegistry.Builder<ItemDefinition> builder = SimpleDefinitionRegistry.<ItemDefinition>builder()
+                    .add(new SimpleItemDefinition("minecraft:empty", 0, false));
+
+            for (ItemDefinition definition : packet.getItems()) {
+                builder.add(new SimpleItemDefinition(definition.getIdentifier(), definition.getRuntimeId(), definition.isComponentBased()));
+            }
+
+            SimpleDefinitionRegistry<ItemDefinition> itemDefinitions = builder.build();
+            this.session.getPeer().getCodecHelper().setItemDefinitions(itemDefinitions);
+            this.user.getUpstreamPeer().getCodecHelper().setItemDefinitions(itemDefinitions);
+        }
 
         return PacketSignal.UNHANDLED;
     }
