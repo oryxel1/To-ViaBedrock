@@ -73,9 +73,9 @@ public class BlockAndItemMapper_v844 extends ProtocolToProtocol {
         this.registerServerbound(InventoryTransactionPacket.class, wrapped -> {
             final InventoryTransactionPacket packet = (InventoryTransactionPacket) wrapped.getPacket();
             packet.setItemInHand(this.mapItemReversed(wrapped.session(), packet.getItemInHand()));
-            if (packet.getBlockDefinition() != null) {
-                packet.setBlockDefinition(new UnknownBlockDefinition(mapBlockId(wrapped.session(), packet.getBlockDefinition().getRuntimeId())));
-            }
+//            if (packet.getBlockDefinition() != null) {
+//                packet.setBlockDefinition(new UnknownBlockDefinition(mapBlockId(wrapped.session(), packet.getBlockDefinition().getRuntimeId())));
+//            }
 //            System.out.println(packet);
         });
 
