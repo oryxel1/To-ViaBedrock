@@ -45,14 +45,17 @@ public class Protocol844to827 extends BlockAndItemMapper_v844 {
     protected void mapItem() {
         this.itemIdentifierToRemapper.put("minecraft:iron_chain", definition -> new SimpleItemDefinition("minecraft:chain", definition.getRuntimeId(), definition.getVersion(), definition.isComponentBased(), definition.getComponentData()));
 
-        this.itemIdentifierToMapped.put("minecraft:oxidized_copper_chain", "minecraft:iron_chain");
-        this.itemIdentifierToMapped.put("minecraft:waxed_weathered_copper_chain", "minecraft:iron_chain");
-        this.itemIdentifierToMapped.put("minecraft:waxed_exposed_copper_chain", "minecraft:iron_chain");
-        this.itemIdentifierToMapped.put("minecraft:waxed_oxidized_copper_chain", "minecraft:iron_chain");
-        this.itemIdentifierToMapped.put("minecraft:waxed_copper_chain", "minecraft:iron_chain");
-        this.itemIdentifierToMapped.put("minecraft:exposed_copper_chain", "minecraft:iron_chain");
-        this.itemIdentifierToMapped.put("minecraft:weathered_copper_chain", "minecraft:iron_chain");
-        this.itemIdentifierToMapped.put("minecraft:copper_chain", "minecraft:iron_chain");
+        try {
+            {
+                final String jsonString = new String(Objects.requireNonNull(Protocol844to827.class.getResourceAsStream("/items/itemIdentifiers_v844to827.json")).readAllBytes());
+                final JsonObject object = JsonParser.parseString(jsonString).getAsJsonObject();
+                for (String key : object.keySet()) {
+                    this.itemIdentifierToMapped.put(key, object.get(key).getAsString());
+                }
+            }
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @Override
