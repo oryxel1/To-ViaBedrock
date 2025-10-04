@@ -8,6 +8,8 @@ import org.cloudburstmc.protocol.bedrock.data.BlockChangeEntry;
 import org.cloudburstmc.protocol.bedrock.data.LevelEvent;
 import org.cloudburstmc.protocol.bedrock.data.LevelEventType;
 import org.cloudburstmc.protocol.bedrock.data.SubChunkData;
+import org.cloudburstmc.protocol.bedrock.data.definitions.ItemDefinition;
+import org.cloudburstmc.protocol.bedrock.data.definitions.SimpleItemDefinition;
 import org.cloudburstmc.protocol.bedrock.packet.*;
 import org.cloudburstmc.protocol.common.util.VarInts;
 import oxy.toviabedrock.base.ProtocolToProtocol;
@@ -24,6 +26,11 @@ import java.util.Map;
 public class BlockAndItemMapper_v844 extends ProtocolToProtocol {
     protected final Map<Integer, Integer> mappedBlockIds = new HashMap<>();
     protected final Map<Integer, Integer> mappedHashedBlockIds = new HashMap<>();
+
+    protected final Map<String, ItemRemapper> mappedItemDefinition = new HashMap<>();
+    public interface ItemRemapper {
+        ItemDefinition remap(ItemDefinition definition);
+    }
 
     public BlockAndItemMapper_v844(BedrockCodec originalCodec, BedrockCodec translatedCodec) {
         super(originalCodec, translatedCodec);
@@ -47,6 +54,19 @@ public class BlockAndItemMapper_v844 extends ProtocolToProtocol {
     );
     @Override
     protected void registerProtocol() {
+        this.registerClientbound(ItemComponentPacket.class, wrapped -> {
+            final ItemComponentPacket packet = (ItemComponentPacket) wrapped.getPacket();
+            for (int i = 0; i < packet.getItems().size(); i++) {
+                final ItemDefinition definition = packet.getItems().get(i);
+                final ItemRemapper remapper = this.mappedItemDefinition.get(definition.getIdentifier());
+                if (remapper != null) {
+                    packet.getItems().set(i, remapper.remap(definition));
+                }
+
+//                System.out.println(definition);
+            }
+        });
+
         this.registerClientbound(LevelEventPacket.class, wrapped -> {
             final LevelEventPacket packet = (LevelEventPacket) wrapped.getPacket();
             if (BLOCK_PARTICLE_EVENTS.contains(packet.getType())) {

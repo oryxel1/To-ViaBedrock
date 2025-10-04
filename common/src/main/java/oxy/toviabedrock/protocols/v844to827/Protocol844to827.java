@@ -5,6 +5,7 @@ import com.google.gson.JsonParser;
 import org.cloudburstmc.protocol.bedrock.codec.v827.Bedrock_v827;
 import org.cloudburstmc.protocol.bedrock.codec.v844.Bedrock_v844;
 import org.cloudburstmc.protocol.bedrock.data.ExperimentData;
+import org.cloudburstmc.protocol.bedrock.data.definitions.SimpleItemDefinition;
 import org.cloudburstmc.protocol.bedrock.packet.BedrockPacketType;
 import org.cloudburstmc.protocol.bedrock.packet.StartGamePacket;
 import oxy.toviabedrock.mappers.BlockAndItemMapper_v844;
@@ -38,6 +39,12 @@ public class Protocol844to827 extends BlockAndItemMapper_v844 {
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
+    }
+
+    @Override
+    protected void mapItem() {
+        // TODO: Implement the rest as custom item.
+        this.mappedItemDefinition.put("minecraft:iron_chain", definition -> new SimpleItemDefinition("minecraft:chain", definition.getRuntimeId(), definition.getVersion(), definition.isComponentBased(), definition.getComponentData()));
     }
 
     @Override

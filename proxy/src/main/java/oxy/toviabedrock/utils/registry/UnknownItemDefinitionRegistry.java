@@ -7,7 +7,7 @@ import oxy.toviabedrock.utils.definition.UnknownItemDefinition;
 public class UnknownItemDefinitionRegistry implements DefinitionRegistry<ItemDefinition> {
     @Override
     public ItemDefinition getDefinition(int runtimeId) {
-        return new UnknownItemDefinition(runtimeId);
+        return new UnknownItemDefinition("", runtimeId, true);
     }
 
     @Override

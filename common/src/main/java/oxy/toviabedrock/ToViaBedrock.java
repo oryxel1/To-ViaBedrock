@@ -1,7 +1,9 @@
 package oxy.toviabedrock;
 
 import org.cloudburstmc.protocol.bedrock.codec.BedrockCodec;
+import org.cloudburstmc.protocol.bedrock.codec.BedrockCodecHelper;
 import org.cloudburstmc.protocol.bedrock.codec.v827.Bedrock_v827;
+import org.cloudburstmc.protocol.bedrock.data.EncodingSettings;
 import oxy.toviabedrock.base.ProtocolToProtocol;
 import oxy.toviabedrock.protocols.v844to827.Protocol844to827;
 
@@ -44,7 +46,17 @@ public class ToViaBedrock {
     }
 
     public static BedrockCodec getCodec(int protocolVersion) {
-        return SUPPORTED_PROTOCOLS.get(protocolVersion).getTranslatedCodec();
+        final BedrockCodec CODEC = SUPPORTED_PROTOCOLS.get(protocolVersion).getTranslatedCodec();
+        final BedrockCodecHelper helper = CODEC.createHelper();
+        helper.setEncodingSettings(EncodingSettings.builder()
+                .maxListSize(Integer.MAX_VALUE)
+                .maxByteArraySize(Integer.MAX_VALUE)
+                .maxNetworkNBTSize(Integer.MAX_VALUE)
+                .maxItemNBTSize(Integer.MAX_VALUE)
+                .maxStringLength(Integer.MAX_VALUE)
+                .build());
+
+        return CODEC.toBuilder().helper(() -> helper).build();
     }
 
     public static boolean isSupported(int protocolVersion) {
