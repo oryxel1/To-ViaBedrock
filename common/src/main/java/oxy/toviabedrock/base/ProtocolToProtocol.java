@@ -26,15 +26,26 @@ public class ProtocolToProtocol {
     private final Map<Class<? extends BedrockPacket>, Consumer<WrappedBedrockPacket>> mappedClientBounds = new HashMap<>();
     private final Map<Class<? extends BedrockPacket>, Consumer<WrappedBedrockPacket>> mappedServerBounds = new HashMap<>();
 
+    protected final List<Mapper> mappers = new ArrayList<>();
+
     public ProtocolToProtocol(BedrockCodec originalCodec, BedrockCodec translatedCodec) {
         this.originalCodec = originalCodec;
         this.translatedCodec = translatedCodec;
 
         this.registerProtocol();
+        this.initMappers();
     }
 
-    public void init(UserSession session) {}
-    protected void registerProtocol() {}
+    public void initMappers() {
+        this.mappers.forEach(Mapper::registerProtocol);
+    }
+
+    public void init(UserSession session) {
+        this.mappers.forEach(mapper -> mapper.init(session));
+    }
+
+    protected void registerProtocol() {
+    }
 
     public void unmapDirectlyClientbound(BedrockPacketType type) {
         this.directPassthroughClientBounds.remove(type);

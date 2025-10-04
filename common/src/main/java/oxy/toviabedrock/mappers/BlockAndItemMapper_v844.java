@@ -17,6 +17,7 @@ import org.cloudburstmc.protocol.bedrock.data.inventory.CreativeItemData;
 import org.cloudburstmc.protocol.bedrock.data.inventory.ItemData;
 import org.cloudburstmc.protocol.bedrock.packet.*;
 import org.cloudburstmc.protocol.common.util.VarInts;
+import oxy.toviabedrock.base.Mapper;
 import oxy.toviabedrock.base.ProtocolToProtocol;
 import oxy.toviabedrock.mappers.storage.ItemRemappingStorage_v844;
 import oxy.toviabedrock.session.UserSession;
@@ -31,21 +32,21 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class BlockAndItemMapper_v844 extends ProtocolToProtocol {
+public class BlockAndItemMapper_v844 extends Mapper {
     protected final Map<Integer, Integer> mappedBlockIds = new HashMap<>();
     protected final Map<Integer, Integer> mappedHashedBlockIds = new HashMap<>();
 
     protected final Map<String, ItemRemapper> itemIdentifierToRemapper = new HashMap<>();
     protected final HashMapWithHashed<String, String> itemIdentifierToMapped = new HashMapWithHashed<>();
-    public interface ItemRemapper {
-        ItemDefinition remap(ItemDefinition definition);
-    }
 
-    public BlockAndItemMapper_v844(BedrockCodec originalCodec, BedrockCodec translatedCodec) {
-        super(originalCodec, translatedCodec);
-
+    public BlockAndItemMapper_v844(ProtocolToProtocol translator) {
+        super(translator);
         this.mapBlock();
         this.mapItem();
+    }
+
+    public interface ItemRemapper {
+        ItemDefinition remap(ItemDefinition definition);
     }
 
     protected void mapBlock() {
