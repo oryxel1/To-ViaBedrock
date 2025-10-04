@@ -23,7 +23,7 @@ public class Protocol844to827 extends BlockAndItemMapper_v844 {
     protected void mapBlock() {
         try {
             {
-                final String jsonString = new String(Objects.requireNonNull(Protocol844to827.class.getResourceAsStream("/blocks/blockIds_v844to827.json")).readAllBytes());
+                final String jsonString = new String(Objects.requireNonNull(Protocol844to827.class.getResourceAsStream("/blocks/v844to827/blockIds_v844to827.json")).readAllBytes());
                 final JsonObject object = JsonParser.parseString(jsonString).getAsJsonObject();
                 for (String key : object.keySet()) {
                     this.mappedBlockIds.put(Integer.valueOf(key), object.get(key).getAsInt());
@@ -31,7 +31,7 @@ public class Protocol844to827 extends BlockAndItemMapper_v844 {
             }
 
             {
-                final String jsonString = new String(Objects.requireNonNull(Protocol844to827.class.getResourceAsStream("/blocks/blockIds_v844to827_hashed.json")).readAllBytes());
+                final String jsonString = new String(Objects.requireNonNull(Protocol844to827.class.getResourceAsStream("/blocks/v844to827/blockIds_v844to827_hashed.json")).readAllBytes());
                 final JsonObject object = JsonParser.parseString(jsonString).getAsJsonObject();
                 for (String key : object.keySet()) {
                     this.mappedHashedBlockIds.put(Integer.valueOf(key), object.get(key).getAsInt());

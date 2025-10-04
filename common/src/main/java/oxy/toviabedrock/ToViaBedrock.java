@@ -2,22 +2,21 @@ package oxy.toviabedrock;
 
 import org.cloudburstmc.protocol.bedrock.codec.BedrockCodec;
 import org.cloudburstmc.protocol.bedrock.codec.BedrockCodecHelper;
+import org.cloudburstmc.protocol.bedrock.codec.v818.Bedrock_v818;
+import org.cloudburstmc.protocol.bedrock.codec.v819.Bedrock_v819;
 import org.cloudburstmc.protocol.bedrock.codec.v827.Bedrock_v827;
 import org.cloudburstmc.protocol.bedrock.data.EncodingSettings;
 import oxy.toviabedrock.base.ProtocolToProtocol;
+import oxy.toviabedrock.protocols.v827to818and819.Protocol827to819;
 import oxy.toviabedrock.protocols.v844to827.Protocol844to827;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.logging.Logger;
 
 public class ToViaBedrock {
     private static final Logger LOGGER = Logger.getLogger("To-ViaBedrock");
-    private static final Map<Integer, ProtocolToProtocol> SUPPORTED_PROTOCOLS = new HashMap<>();
+    private static final Map<Integer, ProtocolToProtocol> SUPPORTED_PROTOCOLS = new TreeMap<>();
 
-    // WARNING: THESE HAVE TO BE ADDED IN ORDER, FROM LATEST TO OLDEST.
     public static void init() {
         // TODO: Finish these. Since I kinda want to see how this works when join latest version.
 //        SUPPORTED_PROTOCOLS.put(Bedrock_v261.CODEC.getProtocolVersion(), new Protocol274to261());
@@ -25,6 +24,8 @@ public class ToViaBedrock {
 //        SUPPORTED_PROTOCOLS.put(Bedrock_v291.CODEC.getProtocolVersion(), new Protocol291to282());
 
         SUPPORTED_PROTOCOLS.put(Bedrock_v827.CODEC.getProtocolVersion(), new Protocol844to827());
+        SUPPORTED_PROTOCOLS.put(Bedrock_v819.CODEC.getProtocolVersion(), new Protocol827to819(Bedrock_v819.CODEC));
+        SUPPORTED_PROTOCOLS.put(Bedrock_v818.CODEC.getProtocolVersion(), new Protocol827to819(Bedrock_v818.CODEC));
     }
 
     public static List<ProtocolToProtocol> getTranslators(int target, int client) {
@@ -42,7 +43,7 @@ public class ToViaBedrock {
             translators.add(protocol.getValue());
         }
 
-        return translators;
+        return translators.reversed();
     }
 
     public static BedrockCodec getCodec(int protocolVersion) {

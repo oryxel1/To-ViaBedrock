@@ -125,7 +125,7 @@ public class BlockAndItemMapper_v844 extends ProtocolToProtocol {
                 }
 
                 wrapped.session().get(ItemRemappingStorage_v844.class).put(definition.getIdentifier(), definition);
-                System.out.println(definition);
+//                System.out.println(definition);
             }
         });
 
@@ -197,6 +197,10 @@ public class BlockAndItemMapper_v844 extends ProtocolToProtocol {
         });
 
         this.registerClientbound(LevelChunkPacket.class, wrapped -> {
+            if (!blockNeedToBeTranslated(wrapped.session())) {
+                return;
+            }
+
             final LevelChunkPacket packet = (LevelChunkPacket) wrapped.getPacket();
             final int subChunksCount = packet.getSubChunksLength();
             if (subChunksCount < -2 || packet.getDimension() < 0 || packet.getDimension() > 2) {
@@ -238,6 +242,10 @@ public class BlockAndItemMapper_v844 extends ProtocolToProtocol {
         });
 
         this.registerClientbound(SubChunkPacket.class, wrapped -> {
+            if (!blockNeedToBeTranslated(wrapped.session())) {
+                return;
+            }
+
             final SubChunkPacket packet = (SubChunkPacket) wrapped.getPacket();
 
             final List<SubChunkData> subChunks = new ArrayList<>();
@@ -435,6 +443,10 @@ public class BlockAndItemMapper_v844 extends ProtocolToProtocol {
         } else {
             return this.mappedBlockIds.getOrDefault(id, id);
         }
+    }
+
+    private boolean blockNeedToBeTranslated(UserSession user) {
+        return user.get(GameSessionStorage.class).isBlockNetworkIdsHashed() ? !this.mappedHashedBlockIds.isEmpty() : !this.mappedBlockIds.isEmpty();
     }
 
     private enum BitVersionType {
