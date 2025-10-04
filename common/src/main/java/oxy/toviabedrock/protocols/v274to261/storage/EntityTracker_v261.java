@@ -8,21 +8,24 @@ import org.cloudburstmc.protocol.bedrock.packet.MoveEntityDeltaPacket;
 import oxy.toviabedrock.session.UserSession;
 import oxy.toviabedrock.session.storage.UserStorage;
 
+import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class EntityTracker_v261 extends UserStorage {
+    private final Map<Long, Long> uniqueIdToRuntimeId = new HashMap<>();
     private final Map<Long, EntityCache> entities = new ConcurrentHashMap<>();
     public EntityTracker_v261(UserSession session) {
         super(session);
     }
 
-    public void cache(long entityId, Vector3f position, Vector3f rotation) {
-        this.entities.put(entityId, new EntityCache(position, rotation));
+    public void cache(long runtimeId, long uniqueId, Vector3f position, Vector3f rotation) {
+        this.entities.put(runtimeId, new EntityCache(position, rotation));
+        this.uniqueIdToRuntimeId.put(uniqueId, runtimeId);
     }
 
     public void remove(long entityId) {
-        this.entities.remove(entityId);
+        this.entities.remove(this.uniqueIdToRuntimeId.remove(entityId));
     }
 
     public void moveRelative(long entityId, MoveEntityDeltaPacket delta) {

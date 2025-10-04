@@ -26,21 +26,25 @@ public class Protocol274to261 extends ProtocolToProtocol {
         Arrays.stream(BedrockPacketType.values()).forEach(this::mapDirectlyClientbound);
         this.ignoreClientbound(UpdateBlockSyncedPacket.class);
 
+        this.registerClientbound(RemoveEntityPacket.class, wrapped -> {
+            final RemoveEntityPacket packet = (RemoveEntityPacket) wrapped.getPacket();
+            wrapped.session().get(EntityTracker_v261.class).remove(packet.getUniqueEntityId());
+        });
         this.registerClientbound(AddPaintingPacket.class, wrapped -> {
             final AddPaintingPacket packet = (AddPaintingPacket) wrapped.getPacket();
-            wrapped.session().get(EntityTracker_v261.class).cache(packet.getRuntimeEntityId(), packet.getPosition(), Vector3f.ZERO);
+            wrapped.session().get(EntityTracker_v261.class).cache(packet.getRuntimeEntityId(), packet.getUniqueEntityId(), packet.getPosition(), Vector3f.ZERO);
         });
         this.registerClientbound(AddItemEntityPacket.class, wrapped -> {
             final AddItemEntityPacket packet = (AddItemEntityPacket) wrapped.getPacket();
-            wrapped.session().get(EntityTracker_v261.class).cache(packet.getRuntimeEntityId(), packet.getPosition(), Vector3f.ZERO);
+            wrapped.session().get(EntityTracker_v261.class).cache(packet.getRuntimeEntityId(), packet.getUniqueEntityId(), packet.getPosition(), Vector3f.ZERO);
         });
         this.registerClientbound(AddPlayerPacket.class, wrapped -> {
             final AddPlayerPacket packet = (AddPlayerPacket) wrapped.getPacket();
-            wrapped.session().get(EntityTracker_v261.class).cache(packet.getRuntimeEntityId(), packet.getPosition(), packet.getRotation());
+            wrapped.session().get(EntityTracker_v261.class).cache(packet.getRuntimeEntityId(), packet.getUniqueEntityId(), packet.getPosition(), packet.getRotation());
         });
         this.registerClientbound(AddEntityPacket.class, wrapped -> {
             final AddEntityPacket packet = (AddEntityPacket) wrapped.getPacket();
-            wrapped.session().get(EntityTracker_v261.class).cache(packet.getRuntimeEntityId(), packet.getPosition(), Vector3f.from(packet.getRotation().getX(), packet.getRotation().getY(), packet.getRotation().getY()));
+            wrapped.session().get(EntityTracker_v261.class).cache(packet.getRuntimeEntityId(), packet.getUniqueEntityId(), packet.getPosition(), Vector3f.from(packet.getRotation().getX(), packet.getRotation().getY(), packet.getRotation().getY()));
         });
         this.registerClientbound(MovePlayerPacket.class, wrapped -> {
             final MovePlayerPacket packet = (MovePlayerPacket) wrapped.getPacket();

@@ -6,7 +6,6 @@ import io.netty.buffer.Unpooled;
 import org.cloudburstmc.nbt.NbtMap;
 import org.cloudburstmc.nbt.NbtMapBuilder;
 import org.cloudburstmc.nbt.NbtType;
-import org.cloudburstmc.protocol.bedrock.codec.BedrockCodec;
 import org.cloudburstmc.protocol.bedrock.data.BlockChangeEntry;
 import org.cloudburstmc.protocol.bedrock.data.LevelEvent;
 import org.cloudburstmc.protocol.bedrock.data.LevelEventType;
@@ -78,6 +77,11 @@ public class BlockAndItemMapper_v844 extends Mapper {
 //                packet.setBlockDefinition(new UnknownBlockDefinition(mapBlockId(wrapped.session(), packet.getBlockDefinition().getRuntimeId())));
 //            }
 //            System.out.println(packet);
+        });
+
+        this.registerClientbound(AddItemEntityPacket.class, wrapped -> {
+            AddItemEntityPacket packet = (AddItemEntityPacket) wrapped.getPacket();
+            packet.setItemInHand(this.mapItem(wrapped.session(), packet.getItemInHand()));
         });
 
         this.registerClientbound(CreativeContentPacket.class, wrapped -> {

@@ -9,6 +9,7 @@ import org.cloudburstmc.protocol.bedrock.codec.v827.Bedrock_v827;
 import org.cloudburstmc.protocol.bedrock.packet.BedrockPacketType;
 import oxy.toviabedrock.base.ProtocolToProtocol;
 import oxy.toviabedrock.mappers.BlockAndItemMapper_v844;
+import oxy.toviabedrock.mappers.EntityMapper_v844;
 
 import java.util.Arrays;
 import java.util.Objects;
@@ -65,6 +66,16 @@ public class Protocol827to819 extends ProtocolToProtocol {
                 }
             }
         });
+
+        if (getTranslatedCodec() == Bedrock_v819.CODEC) {
+            this.mappers.add(new EntityMapper_v844(this) {
+                @Override
+                protected void mapEntity() {
+                    this.identifierToMapped.put("minecraft:copper_golem", new MappedEntity("minecraft:armor_stand", true));
+                }
+            });
+        }
+
         super.initMappers();
     }
 
