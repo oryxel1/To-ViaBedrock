@@ -20,10 +20,20 @@ public class Protocol844to827 extends BlockAndItemMapper_v844 {
     @Override
     protected void mapBlock() {
         try {
-            final String jsonString = new String(Objects.requireNonNull(Protocol844to827.class.getResourceAsStream("/blocks/blockIds_v844to827.json")).readAllBytes());
-            final JsonObject object = JsonParser.parseString(jsonString).getAsJsonObject();
-            for (String key : object.keySet()) {
-                this.mappedBlockIds.put(Integer.valueOf(key), object.get(key).getAsInt());
+            {
+                final String jsonString = new String(Objects.requireNonNull(Protocol844to827.class.getResourceAsStream("/blocks/blockIds_v844to827.json")).readAllBytes());
+                final JsonObject object = JsonParser.parseString(jsonString).getAsJsonObject();
+                for (String key : object.keySet()) {
+                    this.mappedBlockIds.put(Integer.valueOf(key), object.get(key).getAsInt());
+                }
+            }
+
+            {
+                final String jsonString = new String(Objects.requireNonNull(Protocol844to827.class.getResourceAsStream("/blocks/blockIds_v844to827_hashed.json")).readAllBytes());
+                final JsonObject object = JsonParser.parseString(jsonString).getAsJsonObject();
+                for (String key : object.keySet()) {
+                    this.mappedHashedBlockIds.put(Integer.valueOf(key), object.get(key).getAsInt());
+                }
             }
         } catch (Exception e) {
             throw new RuntimeException(e);

@@ -11,6 +11,8 @@ import org.cloudburstmc.protocol.bedrock.data.SubChunkData;
 import org.cloudburstmc.protocol.bedrock.packet.*;
 import org.cloudburstmc.protocol.common.util.VarInts;
 import oxy.toviabedrock.base.ProtocolToProtocol;
+import oxy.toviabedrock.session.UserSession;
+import oxy.toviabedrock.session.storage.impl.GameSessionStorage;
 import oxy.toviabedrock.utils.MathUtils;
 import oxy.toviabedrock.utils.definition.UnknownBlockDefinition;
 
@@ -21,6 +23,7 @@ import java.util.Map;
 
 public class BlockAndItemMapper_v844 extends ProtocolToProtocol {
     protected final Map<Integer, Integer> mappedBlockIds = new HashMap<>();
+    protected final Map<Integer, Integer> mappedHashedBlockIds = new HashMap<>();
 
     public BlockAndItemMapper_v844(BedrockCodec originalCodec, BedrockCodec translatedCodec) {
         super(originalCodec, translatedCodec);
@@ -47,7 +50,7 @@ public class BlockAndItemMapper_v844 extends ProtocolToProtocol {
         this.registerClientbound(LevelEventPacket.class, wrapped -> {
             final LevelEventPacket packet = (LevelEventPacket) wrapped.getPacket();
             if (BLOCK_PARTICLE_EVENTS.contains(packet.getType())) {
-                packet.setData(this.mappedBlockIds.getOrDefault(packet.getData(), packet.getData()));
+                packet.setData(mapBlockId(wrapped.session(), packet.getData()));
             }
         });
 
@@ -64,7 +67,7 @@ public class BlockAndItemMapper_v844 extends ProtocolToProtocol {
 
         this.registerClientbound(UpdateBlockPacket.class, wrapped -> {
             final UpdateBlockPacket packet = (UpdateBlockPacket) wrapped.getPacket();
-            packet.setDefinition(new UnknownBlockDefinition(this.mappedBlockIds.getOrDefault(packet.getDefinition().getRuntimeId(), packet.getDefinition().getRuntimeId())));
+            packet.setDefinition(new UnknownBlockDefinition(mapBlockId(wrapped.session(), packet.getDefinition().getRuntimeId())));
         });
 
         this.registerClientbound(UpdateSubChunkBlocksPacket.class, wrapped -> {
@@ -73,8 +76,8 @@ public class BlockAndItemMapper_v844 extends ProtocolToProtocol {
             for (int i = 0; i < packet.getStandardBlocks().size(); i++) {
                 final BlockChangeEntry entry = packet.getStandardBlocks().get(i);
                 int blockId = entry.getDefinition().getRuntimeId();
-                Integer id = this.mappedBlockIds.get(blockId);
-                if (id == null) {
+                int id = mapBlockId(wrapped.session(), blockId);
+                if (id == blockId) {
                     continue;
                 }
 
@@ -92,8 +95,8 @@ public class BlockAndItemMapper_v844 extends ProtocolToProtocol {
             for (int i = 0; i < packet.getExtraBlocks().size(); i++) {
                 final BlockChangeEntry entry = packet.getExtraBlocks().get(i);
                 int blockId = entry.getDefinition().getRuntimeId();
-                Integer id = this.mappedBlockIds.get(blockId);
-                if (id == null) {
+                int id = mapBlockId(wrapped.session(), blockId);
+                if (id == blockId) {
                     continue;
                 }
 
@@ -121,7 +124,7 @@ public class BlockAndItemMapper_v844 extends ProtocolToProtocol {
             final ByteBuf buffer = Unpooled.wrappedBuffer(packet.getData());
             try {
                 for (int i = 0; i < subChunksCount; i++) {
-                    readChunkSectionAndTranslate(buffer, newBuffer);
+                    readChunkSectionAndTranslate(wrapped.session(), buffer, newBuffer);
                 }
 
                 // Write the rest, we only handle the new blocks.
@@ -158,7 +161,7 @@ public class BlockAndItemMapper_v844 extends ProtocolToProtocol {
                 final ByteBuf buffer = Unpooled.wrappedBuffer(chunkData.getData());
                 final ByteBuf newBuffer = ByteBufAllocator.DEFAULT.ioBuffer(buffer.capacity());
                 try {
-                    readChunkSectionAndTranslate(buffer, newBuffer);
+                    readChunkSectionAndTranslate(wrapped.session(), buffer, newBuffer);
 
                     // Write the rest, we only handle the new blocks.
                     newBuffer.writeBytes(buffer);
@@ -180,7 +183,7 @@ public class BlockAndItemMapper_v844 extends ProtocolToProtocol {
                     subChunks.add(data);
                 } catch (Exception ignored) {
                     wrapped.cancel();
-                    ignored.printStackTrace();
+//                    ignored.printStackTrace();
                     return;
                 } finally {
                     newBuffer.release();
@@ -197,16 +200,16 @@ public class BlockAndItemMapper_v844 extends ProtocolToProtocol {
         });
     }
 
-    private void readChunkSectionAndTranslate(ByteBuf buffer, ByteBuf newBuffer) {
+    private void readChunkSectionAndTranslate(UserSession session, ByteBuf buffer, ByteBuf newBuffer) {
         final byte version = buffer.readByte();
         newBuffer.writeByte(version);
 
         switch (version) {
-            case 8, 9 -> translatePaletteV89(version, buffer, newBuffer);
+            case 8, 9 -> translatePaletteV89(session, version, buffer, newBuffer);
         }
     }
 
-    private void translatePaletteV89(int version, ByteBuf buffer, ByteBuf newBuffer) {
+    private void translatePaletteV89(UserSession session, int version, ByteBuf buffer, ByteBuf newBuffer) {
         final short layers = buffer.readUnsignedByte(); // Layers (ideally 2).
         newBuffer.writeByte(layers);
         if (version == 9) {
@@ -241,14 +244,16 @@ public class BlockAndItemMapper_v844 extends ProtocolToProtocol {
 
             // It's a bad idea to map block like this since it allow uhh well duplicate block id! But it works then it works.
             for (int paletteIndex = 0; paletteIndex < size; paletteIndex++) {
-                int blockId = VarInts.readInt(buffer);
-                Integer id = this.mappedBlockIds.get(blockId);
-                if (id != null) {
-                    blockId = id;
-                }
-
-                VarInts.writeInt(newBuffer, blockId);
+                VarInts.writeInt(newBuffer, mapBlockId(session, VarInts.readInt(buffer)));
             }
+        }
+    }
+
+    private int mapBlockId(UserSession user, int id) {
+        if (user.get(GameSessionStorage.class).isBlockNetworkIdsHashed()) {
+            return this.mappedHashedBlockIds.getOrDefault(id, id);
+        } else {
+            return this.mappedBlockIds.getOrDefault(id, id);
         }
     }
 

@@ -11,7 +11,6 @@ import oxy.toviabedrock.base.ProtocolToProtocol;
 
 import java.util.List;
 
-
 public class ProxyUserSession extends UserSession {
     private final BedrockServerSession upstreamSession;
     @Setter

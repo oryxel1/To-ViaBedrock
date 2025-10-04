@@ -16,6 +16,7 @@ import oxy.toviabedrock.base.ProtocolToProtocol;
 import oxy.toviabedrock.base.WrappedBedrockPacket;
 import oxy.toviabedrock.session.ProxyUserSession;
 import oxy.toviabedrock.session.storage.DownstreamStorage;
+import oxy.toviabedrock.session.storage.impl.GameSessionStorage;
 
 import javax.crypto.SecretKey;
 import java.security.InvalidKeyException;
@@ -55,6 +56,14 @@ public class DownstreamPacketHandler implements BedrockPacketHandler {
     public PacketSignal handle(PlayStatusPacket packet) {
         this.user.sendUpstreamPacket(packet, false);
         return PacketSignal.HANDLED;
+    }
+
+    @Override
+    public PacketSignal handle(StartGamePacket packet) {
+        final GameSessionStorage gameSession = this.user.get(GameSessionStorage.class);
+        gameSession.setBlockNetworkIdsHashed(packet.isBlockNetworkIdsHashed());
+
+        return PacketSignal.UNHANDLED;
     }
 
     @Override
