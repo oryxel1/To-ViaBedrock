@@ -20,8 +20,6 @@ import oxy.toviabedrock.handler.DownstreamPacketHandler;
 import oxy.toviabedrock.session.ProxyUserSession;
 import oxy.toviabedrock.session.UserSession;
 import oxy.toviabedrock.utils.ForgeryUtils;
-import oxy.toviabedrock.utils.registry.UnknownBlockDefinitionRegistry;
-import oxy.toviabedrock.utils.registry.UnknownItemDefinitionRegistry;
 
 import java.security.KeyPair;
 import java.util.Collections;
@@ -61,12 +59,6 @@ public class DownstreamStorage extends UserStorage {
             RequestNetworkSettingsPacket packet = new RequestNetworkSettingsPacket();
             packet.setProtocolVersion(codec.getProtocolVersion());
             session.sendPacketImmediately(packet);
-
-            session.getPeer().getCodecHelper().setBlockDefinitions(new UnknownBlockDefinitionRegistry());
-            session.getPeer().getCodecHelper().setItemDefinitions(new UnknownItemDefinitionRegistry());
-
-            ((ProxyUserSession) this.session).getUpstreamPeer().getCodecHelper().setBlockDefinitions(new UnknownBlockDefinitionRegistry());
-            ((ProxyUserSession) this.session).getUpstreamPeer().getCodecHelper().setItemDefinitions(new UnknownItemDefinitionRegistry());
         });
     }
 

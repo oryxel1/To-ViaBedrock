@@ -15,7 +15,7 @@ import java.util.logging.Logger;
 
 public class ToViaBedrock {
     private static final Logger LOGGER = Logger.getLogger("To-ViaBedrock");
-    private static final Map<Integer, ProtocolToProtocol> SUPPORTED_PROTOCOLS = new TreeMap<>();
+    private static final TreeMap<Integer, ProtocolToProtocol> SUPPORTED_PROTOCOLS = new TreeMap<>();
 
     public static void init() {
         // TODO: Finish these. Since I kinda want to see how this works when join latest version.
@@ -34,7 +34,7 @@ public class ToViaBedrock {
         }
 
         final List<ProtocolToProtocol> translators = new ArrayList<>();
-        for (Map.Entry<Integer, ProtocolToProtocol> protocol : SUPPORTED_PROTOCOLS.entrySet()) {
+        for (Map.Entry<Integer, ProtocolToProtocol> protocol : SUPPORTED_PROTOCOLS.descendingMap().entrySet()) {
             final int protocolVersion = protocol.getKey();
             if (protocolVersion < client) {
                 break;
@@ -43,7 +43,7 @@ public class ToViaBedrock {
             translators.add(protocol.getValue());
         }
 
-        return translators.reversed();
+        return translators;
     }
 
     public static BedrockCodec getCodec(int protocolVersion) {

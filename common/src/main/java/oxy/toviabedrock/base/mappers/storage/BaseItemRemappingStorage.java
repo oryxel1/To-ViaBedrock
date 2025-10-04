@@ -1,4 +1,4 @@
-package oxy.toviabedrock.mappers.storage;
+package oxy.toviabedrock.base.mappers.storage;
 
 import org.cloudburstmc.protocol.bedrock.data.definitions.ItemDefinition;
 import oxy.toviabedrock.session.UserSession;
@@ -7,10 +7,10 @@ import oxy.toviabedrock.session.storage.UserStorage;
 import java.util.HashMap;
 import java.util.Map;
 
-public class ItemRemappingStorage_v844 extends UserStorage {
+public class BaseItemRemappingStorage extends UserStorage {
     private final Map<String, ItemDefinition> identifierToDefinition = new HashMap<>();
 
-    public ItemRemappingStorage_v844(UserSession session) {
+    public BaseItemRemappingStorage(UserSession session) {
         super(session);
     }
 

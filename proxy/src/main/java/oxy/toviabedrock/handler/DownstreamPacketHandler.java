@@ -17,6 +17,8 @@ import org.jose4j.lang.JoseException;
 import oxy.toviabedrock.ToViaBedrock;
 import oxy.toviabedrock.base.ProtocolToProtocol;
 import oxy.toviabedrock.base.WrappedBedrockPacket;
+import oxy.toviabedrock.base.registry.BlockDefinitionRegistryMapper;
+import oxy.toviabedrock.base.registry.UnknownBlockDefinitionRegistry;
 import oxy.toviabedrock.session.ProxyUserSession;
 import oxy.toviabedrock.session.storage.DownstreamStorage;
 import oxy.toviabedrock.session.storage.impl.GameSessionStorage;
@@ -39,15 +41,9 @@ public class DownstreamPacketHandler implements BedrockPacketHandler {
         if (signal == PacketSignal.HANDLED) {
             return PacketSignal.HANDLED; // We already handled this, don't pass it to the translator.
         }
-        final WrappedBedrockPacket wrapped = new WrappedBedrockPacket(this.user, packet, false);
-        for (ProtocolToProtocol translator : this.user.getTranslators()) {
-            if (!translator.passthroughClientbound(wrapped)) {
-                return PacketSignal.HANDLED;
-            }
-        }
-        packet = wrapped.getPacket();
+        packet = this.user.translateClientbound(packet);
 
-        if (!wrapped.isCancelled()) {
+        if (packet != null) {
 //            System.out.println("Passthrough clientbound: " + packet.getPacketType());
             this.user.sendUpstreamPacket(packet, false);
         }
@@ -75,6 +71,10 @@ public class DownstreamPacketHandler implements BedrockPacketHandler {
             this.session.getPeer().getCodecHelper().setItemDefinitions(itemDefinitions);
             this.user.getUpstreamPeer().getCodecHelper().setItemDefinitions(itemDefinitions);
         }
+
+        // We have to set this up so we can translate the block ids....
+        session.getPeer().getCodecHelper().setBlockDefinitions(new BlockDefinitionRegistryMapper(this.user));
+        this.user.getUpstreamPeer().getCodecHelper().setBlockDefinitions(new UnknownBlockDefinitionRegistry());
 
         return PacketSignal.UNHANDLED;
     }

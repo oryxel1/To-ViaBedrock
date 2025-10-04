@@ -11,7 +11,7 @@ public class HashMapWithHashed<A, B> extends HashMap<A, B> {
 
     @Override
     public B put(A key, B value) {
-        System.out.println(key + "," + key.hashCode());
+//        System.out.println(key + "," + key.hashCode());
         this.hashed.put(key.hashCode(), key);
         return super.put(key, value);
     }

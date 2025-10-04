@@ -1,29 +1,19 @@
 package oxy.toviabedrock.session;
 
-import lombok.Getter;
 import lombok.Setter;
 import org.cloudburstmc.protocol.bedrock.BedrockClientSession;
 import org.cloudburstmc.protocol.bedrock.BedrockPeer;
 import org.cloudburstmc.protocol.bedrock.BedrockServerSession;
 import org.cloudburstmc.protocol.bedrock.packet.BedrockPacket;
-import oxy.toviabedrock.ToViaBedrock;
-import oxy.toviabedrock.base.ProtocolToProtocol;
-
-import java.util.List;
 
 public class ProxyUserSession extends UserSession {
     private final BedrockServerSession upstreamSession;
     @Setter
     private BedrockClientSession downstreamSession;
 
-    @Getter
-    private final List<ProtocolToProtocol> translators;
-
     public ProxyUserSession(int protocolVersion, int targetVersion, BedrockServerSession upstreamSession) {
-        super(protocolVersion);
+        super(protocolVersion, targetVersion);
         this.upstreamSession = upstreamSession;
-
-        this.translators = ToViaBedrock.getTranslators(targetVersion, protocolVersion);
     }
 
     @Override

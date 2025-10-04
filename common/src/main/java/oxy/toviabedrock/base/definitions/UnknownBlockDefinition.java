@@ -1,4 +1,4 @@
-package oxy.toviabedrock.utils.definition;
+package oxy.toviabedrock.base.definitions;
 
 import org.cloudburstmc.protocol.bedrock.data.definitions.BlockDefinition;
 

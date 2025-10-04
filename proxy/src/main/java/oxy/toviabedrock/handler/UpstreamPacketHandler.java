@@ -49,15 +49,9 @@ public class UpstreamPacketHandler implements BedrockPacketHandler {
         if (signal == PacketSignal.HANDLED) {
             return PacketSignal.HANDLED; // We already handled this, don't pass it to the translator.
         }
-        final WrappedBedrockPacket wrapped = new WrappedBedrockPacket(this.user, packet, false);
-        for (ProtocolToProtocol translator : this.user.getTranslators()) {
-            if (!translator.passthroughServerbound(wrapped)) {
-                return PacketSignal.HANDLED;
-            }
-        }
-        packet = wrapped.getPacket();
+        packet = this.user.translateServerbound(packet);
 
-        if (!wrapped.isCancelled()) {
+        if (packet != null) {
 //            System.out.println("Passthrough serverbound: " + packet.getPacketType());
             this.user.sendDownstreamPacket(packet, false);
         }

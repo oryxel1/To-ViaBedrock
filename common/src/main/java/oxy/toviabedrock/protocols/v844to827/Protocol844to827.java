@@ -5,12 +5,12 @@ import com.google.gson.JsonParser;
 import org.cloudburstmc.protocol.bedrock.codec.v827.Bedrock_v827;
 import org.cloudburstmc.protocol.bedrock.codec.v844.Bedrock_v844;
 import org.cloudburstmc.protocol.bedrock.data.ExperimentData;
-import org.cloudburstmc.protocol.bedrock.data.definitions.SimpleItemDefinition;
 import org.cloudburstmc.protocol.bedrock.packet.BedrockPacketType;
 import org.cloudburstmc.protocol.bedrock.packet.ResourcePackStackPacket;
 import org.cloudburstmc.protocol.bedrock.packet.StartGamePacket;
 import oxy.toviabedrock.base.ProtocolToProtocol;
-import oxy.toviabedrock.mappers.BlockAndItemMapper_v844;
+import oxy.toviabedrock.mappers.BlockMapper_v844;
+import oxy.toviabedrock.mappers.ItemMapper_v844;
 
 import java.util.Arrays;
 import java.util.Objects;
@@ -22,9 +22,9 @@ public class Protocol844to827 extends ProtocolToProtocol {
 
     @Override
     public void initMappers() {
-        this.mappers.add(new BlockAndItemMapper_v844(this) {
+        this.mappers.add(new BlockMapper_v844(this) {
             @Override
-            protected void mapBlock() {
+            protected void initBlockMappings() {
                 try {
                     {
                         final String jsonString = new String(Objects.requireNonNull(Protocol844to827.class.getResourceAsStream("/blocks/v844to827/blockIds_v844to827.json")).readAllBytes());
@@ -45,17 +45,19 @@ public class Protocol844to827 extends ProtocolToProtocol {
                     throw new RuntimeException(e);
                 }
             }
+        });
 
+        this.mappers.add(new ItemMapper_v844(this) {
             @Override
-            protected void mapItem() {
-                this.itemIdentifierToRemapper.put("minecraft:iron_chain", definition -> new SimpleItemDefinition("minecraft:chain", definition.getRuntimeId(), definition.getVersion(), definition.isComponentBased(), definition.getComponentData()));
+            protected void initItemMappings() {
+                this.identifierToIdentifier.put("minecraft:iron_chain", "minecraft:chain");
 
                 try {
                     {
                         final String jsonString = new String(Objects.requireNonNull(Protocol844to827.class.getResourceAsStream("/items/itemIdentifiers_v844to827.json")).readAllBytes());
                         final JsonObject object = JsonParser.parseString(jsonString).getAsJsonObject();
                         for (String key : object.keySet()) {
-                            this.itemIdentifierToMapped.put(key, object.get(key).getAsString());
+                            this.itemIdentifierToMappedIdentifier.put(key, object.get(key).getAsString());
                         }
                     }
                 } catch (Exception e) {

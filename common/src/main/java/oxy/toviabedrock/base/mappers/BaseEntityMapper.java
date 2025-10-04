@@ -1,4 +1,4 @@
-package oxy.toviabedrock.mappers;
+package oxy.toviabedrock.base.mappers;
 
 import org.cloudburstmc.protocol.bedrock.data.entity.EntityDataTypes;
 import org.cloudburstmc.protocol.bedrock.packet.AddEntityPacket;
@@ -7,27 +7,27 @@ import org.cloudburstmc.protocol.bedrock.packet.RemoveEntityPacket;
 import org.cloudburstmc.protocol.bedrock.packet.SetEntityDataPacket;
 import oxy.toviabedrock.base.Mapper;
 import oxy.toviabedrock.base.ProtocolToProtocol;
-import oxy.toviabedrock.mappers.storage.EntityRemappingStorage_v844;
+import oxy.toviabedrock.base.mappers.storage.BaseEntityRemappingStorage;
 import oxy.toviabedrock.session.UserSession;
 
 import java.util.HashMap;
 import java.util.Map;
 
-public class EntityMapper_v844 extends Mapper {
+public class BaseEntityMapper extends Mapper {
     protected final Map<String, MappedEntity> identifierToMapped = new HashMap<>();
 
-    public EntityMapper_v844(ProtocolToProtocol translator) {
+    public BaseEntityMapper(ProtocolToProtocol translator) {
         super(translator);
 
-        this.mapEntity();
+        this.initEntityMappings();
     }
 
-    protected void mapEntity() {
+    protected void initEntityMappings() {
     }
 
     @Override
     public void init(UserSession session) {
-        session.put(new EntityRemappingStorage_v844(session));
+        session.put(new BaseEntityRemappingStorage(session));
     }
 
     @Override
@@ -38,13 +38,13 @@ public class EntityMapper_v844 extends Mapper {
 
         this.registerClientbound(RemoveEntityPacket.class, wrapped -> {
             final RemoveEntityPacket packet = (RemoveEntityPacket) wrapped.getPacket();
-            wrapped.session().get(EntityRemappingStorage_v844.class).remove(packet.getUniqueEntityId());
+            wrapped.session().get(BaseEntityRemappingStorage.class).remove(packet.getUniqueEntityId());
         });
 
         this.registerClientbound(AddEntityPacket.class, wrapped -> {
             final AddEntityPacket packet = (AddEntityPacket) wrapped.getPacket();
             final MappedEntity mappedEntity = this.identifierToMapped.get(packet.getIdentifier());
-            final EntityRemappingStorage_v844 storage = wrapped.session().get(EntityRemappingStorage_v844.class);
+            final BaseEntityRemappingStorage storage = wrapped.session().get(BaseEntityRemappingStorage.class);
 
             storage.remove(packet.getUniqueEntityId());
             if (mappedEntity != null) {
@@ -65,7 +65,7 @@ public class EntityMapper_v844 extends Mapper {
 
         this.registerClientbound(SetEntityDataPacket.class, wrapped -> {
             final SetEntityDataPacket packet = (SetEntityDataPacket) wrapped.getPacket();
-            final MappedEntity reverseMapped = wrapped.session().get(EntityRemappingStorage_v844.class).getIdentifier(packet.getRuntimeEntityId());
+            final MappedEntity reverseMapped = wrapped.session().get(BaseEntityRemappingStorage.class).getIdentifier(packet.getRuntimeEntityId());
             if (reverseMapped == null) {
                 return;
             }

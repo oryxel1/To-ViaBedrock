@@ -1,17 +1,17 @@
-package oxy.toviabedrock.mappers.storage;
+package oxy.toviabedrock.base.mappers.storage;
 
-import oxy.toviabedrock.mappers.EntityMapper_v844;
+import oxy.toviabedrock.base.mappers.BaseEntityMapper;
 import oxy.toviabedrock.session.UserSession;
 import oxy.toviabedrock.session.storage.UserStorage;
 
 import java.util.HashMap;
 import java.util.Map;
 
-public class EntityRemappingStorage_v844 extends UserStorage {
+public class BaseEntityRemappingStorage extends UserStorage {
     private final Map<Long, Long> uniqueIdToRuntimeId = new HashMap<>();
-    private final Map<Long, EntityMapper_v844.MappedEntity> runtimeIdToRealIdentifier = new HashMap<>();
+    private final Map<Long, BaseEntityMapper.MappedEntity> runtimeIdToRealIdentifier = new HashMap<>();
 
-    public EntityRemappingStorage_v844(UserSession session) {
+    public BaseEntityRemappingStorage(UserSession session) {
         super(session);
     }
 
@@ -20,11 +20,11 @@ public class EntityRemappingStorage_v844 extends UserStorage {
     }
 
     public void add(long runtimeId, long uniqueId, String identifier, boolean show) {
-        this.runtimeIdToRealIdentifier.put(runtimeId, new EntityMapper_v844.MappedEntity(identifier, show));
+        this.runtimeIdToRealIdentifier.put(runtimeId, new BaseEntityMapper.MappedEntity(identifier, show));
         this.uniqueIdToRuntimeId.put(uniqueId, runtimeId);
     }
 
-    public EntityMapper_v844.MappedEntity getIdentifier(long id) {
+    public BaseEntityMapper.MappedEntity getIdentifier(long id) {
         return this.runtimeIdToRealIdentifier.get(id);
     }
 }

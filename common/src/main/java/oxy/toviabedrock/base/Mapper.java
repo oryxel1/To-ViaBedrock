@@ -14,38 +14,38 @@ public class Mapper {
     protected void registerProtocol() {
     }
 
-    public void init(UserSession session) {
+    protected void init(UserSession session) {
     }
 
-    public void unmapDirectlyClientbound(BedrockPacketType type) {
+    protected void unmapDirectlyClientbound(BedrockPacketType type) {
         this.translator.unmapDirectlyClientbound(type);
     }
 
-    public void unmapDirectlyServerbound(BedrockPacketType type) {
+    protected void unmapDirectlyServerbound(BedrockPacketType type) {
         this.translator.unmapDirectlyServerbound(type);
     }
 
-    public void mapDirectlyClientbound(BedrockPacketType type) {
+    protected void mapDirectlyClientbound(BedrockPacketType type) {
         this.translator.mapDirectlyClientbound(type);
     }
 
-    public void mapDirectlyServerbound(BedrockPacketType type) {
+    protected void mapDirectlyServerbound(BedrockPacketType type) {
         this.translator.mapDirectlyServerbound(type);
     }
 
-    public void ignoreClientbound(Class<? extends BedrockPacket> klass) {
+    protected void ignoreClientbound(Class<? extends BedrockPacket> klass) {
         this.translator.ignoreClientbound(klass);
     }
 
-    public void ignoreServerbound(Class<? extends BedrockPacket> klass) {
+    protected void ignoreServerbound(Class<? extends BedrockPacket> klass) {
         this.translator.ignoreServerbound(klass);
     }
 
-    public void registerClientbound(Class<? extends BedrockPacket> klass, Consumer<WrappedBedrockPacket> consumer) {
+    protected void registerClientbound(Class<? extends BedrockPacket> klass, Consumer<WrappedBedrockPacket> consumer) {
         this.translator.registerClientbound(klass, consumer);
     }
 
-    public void registerServerbound(Class<? extends BedrockPacket> klass, Consumer<WrappedBedrockPacket> consumer) {
+    protected void registerServerbound(Class<? extends BedrockPacket> klass, Consumer<WrappedBedrockPacket> consumer) {
         this.translator.registerServerbound(klass, consumer);
     }
 }

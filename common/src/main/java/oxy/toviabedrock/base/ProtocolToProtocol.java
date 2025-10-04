@@ -26,6 +26,7 @@ public class ProtocolToProtocol {
     private final Map<Class<? extends BedrockPacket>, Consumer<WrappedBedrockPacket>> mappedClientBounds = new HashMap<>();
     private final Map<Class<? extends BedrockPacket>, Consumer<WrappedBedrockPacket>> mappedServerBounds = new HashMap<>();
 
+    @Getter
     protected final List<Mapper> mappers = new ArrayList<>();
 
     public ProtocolToProtocol(BedrockCodec originalCodec, BedrockCodec translatedCodec) {
