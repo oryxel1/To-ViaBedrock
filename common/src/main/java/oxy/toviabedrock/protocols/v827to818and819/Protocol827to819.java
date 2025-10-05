@@ -76,7 +76,7 @@ public class Protocol827to819 extends ProtocolToProtocol {
             this.mappers.add(new BaseEntityMapper(this) {
                 @Override
                 protected void initEntityMappings() {
-                    this.identifierToMapped.put("minecraft:copper_golem", new MappedEntity("minecraft:armor_stand", true));
+                    this.identifierToMapped.put("minecraft:copper_golem", new MappedEntity("minecraft:frog", true));
                 }
             });
         }

@@ -6,6 +6,9 @@ import org.cloudburstmc.protocol.common.PacketSignal;
 import oxy.toviabedrock.ToViaBedrock;
 import oxy.toviabedrock.base.ProtocolToProtocol;
 import oxy.toviabedrock.base.WrappedBedrockPacket;
+import oxy.toviabedrock.chunk.WorldTracker;
+import oxy.toviabedrock.chunk.base.WorldReaderBase;
+import oxy.toviabedrock.chunk.impl.WorldReader_v844;
 import oxy.toviabedrock.session.storage.UserStorage;
 import oxy.toviabedrock.session.storage.impl.GameSessionStorage;
 
@@ -21,12 +24,18 @@ public abstract class UserSession {
     @Getter
     private final List<ProtocolToProtocol> translators;
 
+    @Getter
+    private final WorldReaderBase worldReader;
+
     protected UserSession(int protocolVersion, int serverVersion) {
         this.protocolVersion = protocolVersion;
         this.translators = ToViaBedrock.getTranslators(serverVersion, protocolVersion);
 
         // Default storages.
         this.put(new GameSessionStorage(this));
+        this.put(new WorldTracker(this));
+
+        this.worldReader = new WorldReader_v844(this);
     }
 
     public final BedrockPacket translateClientbound(BedrockPacket packet) {

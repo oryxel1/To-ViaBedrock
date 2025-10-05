@@ -41,6 +41,7 @@ public class DownstreamPacketHandler implements BedrockPacketHandler {
         if (signal == PacketSignal.HANDLED) {
             return PacketSignal.HANDLED; // We already handled this, don't pass it to the translator.
         }
+        this.user.getWorldReader().onClientbound(packet);
         packet = this.user.translateClientbound(packet);
 
         if (packet != null) {

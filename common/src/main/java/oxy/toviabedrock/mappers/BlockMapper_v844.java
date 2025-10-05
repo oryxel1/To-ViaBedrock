@@ -8,12 +8,14 @@ import org.cloudburstmc.protocol.bedrock.data.LevelEventType;
 import org.cloudburstmc.protocol.bedrock.data.SubChunkData;
 import org.cloudburstmc.protocol.bedrock.packet.*;
 import org.cloudburstmc.protocol.common.util.VarInts;
+import oxy.toviabedrock.api.chunks.bitarray.BitArrayVersion;
 import oxy.toviabedrock.base.ProtocolToProtocol;
+import oxy.toviabedrock.base.definitions.UnknownBlockDefinition;
 import oxy.toviabedrock.base.mappers.BaseBlockMapper;
 import oxy.toviabedrock.base.mappers.storage.BaseItemRemappingStorage;
+import oxy.toviabedrock.chunk.WorldTracker;
 import oxy.toviabedrock.session.UserSession;
 import oxy.toviabedrock.utils.MathUtils;
-import oxy.toviabedrock.utils.chunk.BitArrayVersion;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -41,6 +43,18 @@ public class BlockMapper_v844 extends BaseBlockMapper {
     protected void registerProtocol() {
 //        System.out.println("Register protocol: " + translator.getTranslatedCodec().getProtocolVersion());
         super.registerProtocol();
+
+        this.registerServerbound(InventoryTransactionPacket.class, wrapped -> {
+            final InventoryTransactionPacket packet = (InventoryTransactionPacket) wrapped.getPacket();
+            if (packet.getBlockDefinition() != null) {
+                int newId = wrapped.session().get(WorldTracker.class).get(packet.getBlockPosition().getX(), packet.getBlockPosition().getY(), packet.getBlockPosition().getZ(), 0);
+
+                if (newId != -1) {
+//                    System.out.println(newId + "," + packet.getBlockDefinition().getRuntimeId());
+                    packet.setBlockDefinition(new UnknownBlockDefinition(newId));
+                }
+            }
+        });
 
         this.registerClientbound(LevelEventPacket.class, wrapped -> {
             final LevelEventPacket packet = (LevelEventPacket) wrapped.getPacket();

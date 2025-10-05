@@ -49,6 +49,7 @@ public class UpstreamPacketHandler implements BedrockPacketHandler {
         if (signal == PacketSignal.HANDLED) {
             return PacketSignal.HANDLED; // We already handled this, don't pass it to the translator.
         }
+        this.user.getWorldReader().onServerbound(packet);
         packet = this.user.translateServerbound(packet);
 
         if (packet != null) {

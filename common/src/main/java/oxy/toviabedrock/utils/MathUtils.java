@@ -5,4 +5,8 @@ public class MathUtils {
         int truncated = (int) floatNumber;
         return floatNumber > truncated ? truncated + 1 : truncated;
     }
+
+    public static long chunkPositionToLong(int x, int z) {
+        return ((x & 0xFFFFFFFFL) << 32L) | (z & 0xFFFFFFFFL);
+    }
 }
