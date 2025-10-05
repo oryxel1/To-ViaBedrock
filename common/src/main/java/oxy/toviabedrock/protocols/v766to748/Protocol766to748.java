@@ -7,6 +7,7 @@ import org.cloudburstmc.protocol.bedrock.packet.BedrockPacketType;
 import org.cloudburstmc.protocol.bedrock.packet.CameraAimAssistPresetsPacket;
 import org.cloudburstmc.protocol.bedrock.packet.PlayerAuthInputPacket;
 import oxy.toviabedrock.base.ProtocolToProtocol;
+import oxy.toviabedrock.base.mappers.BaseEntityMapper;
 import oxy.toviabedrock.mappers.v766.ItemMapper_v766;
 import oxy.toviabedrock.mappers.v844.BlockMapper_v844;
 import oxy.toviabedrock.utils.MathUtils;
@@ -32,6 +33,12 @@ public class Protocol766to748 extends ProtocolToProtocol {
             protected void initItemMappings() {
                 loadItemMappingsFromFile("itemIdentifiers_v766to748.json");
                 loadVanillaIdentifiersFromFile("vanilla_items_v748.json");
+            }
+        });
+        this.mappers.add(new BaseEntityMapper(this) {
+            @Override
+            protected void initEntityMappings() {
+                this.identifierToMapped.put("minecraft:creaking", new MappedEntity("minecraft:armor_stand", true));
             }
         });
         super.initMappers();
