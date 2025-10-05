@@ -6,6 +6,7 @@ import org.cloudburstmc.nbt.NbtType;
 import org.cloudburstmc.protocol.bedrock.data.definitions.ItemDefinition;
 import org.cloudburstmc.protocol.bedrock.data.definitions.SimpleItemDefinition;
 import org.cloudburstmc.protocol.bedrock.data.inventory.ItemData;
+import org.cloudburstmc.protocol.bedrock.data.inventory.transaction.InventoryActionData;
 import org.cloudburstmc.protocol.bedrock.packet.AddItemEntityPacket;
 import org.cloudburstmc.protocol.bedrock.packet.InventoryContentPacket;
 import org.cloudburstmc.protocol.bedrock.packet.InventorySlotPacket;
@@ -42,6 +43,17 @@ public class BaseItemMapper extends Mapper {
         this.registerServerbound(InventoryTransactionPacket.class, wrapped -> {
             final InventoryTransactionPacket packet = (InventoryTransactionPacket) wrapped.getPacket();
             packet.setItemInHand(this.reverseItemMapFromHash(wrapped.session(), packet.getItemInHand()));
+
+            for (int i = 0; i < packet.getActions().size(); i++) {
+                final InventoryActionData action = packet.getActions().get(i);
+
+                packet.getActions().set(i, new InventoryActionData(
+                        action.getSource(), action.getSlot(),
+                        this.reverseItemMapFromHash(wrapped.session(), action.getFromItem()),
+                        this.reverseItemMapFromHash(wrapped.session(), action.getToItem()),
+                        action.getStackNetworkId()
+                ));
+            }
         });
 
         this.registerClientbound(AddItemEntityPacket.class, wrapped -> {
