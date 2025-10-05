@@ -39,7 +39,7 @@ public class BlockMapper_v844 extends BaseBlockMapper {
 
     @Override
     protected void registerProtocol() {
-        System.out.println("Register protocol: " + translator.getTranslatedCodec().getProtocolVersion());
+//        System.out.println("Register protocol: " + translator.getTranslatedCodec().getProtocolVersion());
         super.registerProtocol();
 
         this.registerClientbound(LevelEventPacket.class, wrapped -> {
@@ -147,8 +147,43 @@ public class BlockMapper_v844 extends BaseBlockMapper {
         newBuffer.writeByte(version);
 
         switch (version) {
+            case 0, 2, 3, 4, 5, 6, 7 -> mapBlockPaletteV0(session, buffer, newBuffer);
+            case 1 -> mapBlockPalette(session, buffer, newBuffer);
             case 8, 9 -> mapBlockPaletteV9_8(session, version, buffer, newBuffer);
         }
+    }
+
+    private void mapBlockPaletteV0(UserSession session, ByteBuf buffer, ByteBuf newBuffer) {
+        final byte[] blockArray = new byte[4096];
+        final byte[] blockData = new byte[4096 / 2];
+        buffer.readBytes(blockArray);
+        buffer.readBytes(blockData);
+
+        // TODO: Is this correct?
+        for (int i = 0; i < blockArray.length; i++) {
+            byte blockDataIndex = blockData[i / 2];
+            byte value;
+            if (i % 2 == 0) {
+                value = (byte) (blockDataIndex & 0xF);
+            } else {
+                value = (byte) ((blockDataIndex >> 4) & 0xF);
+            }
+
+            int oldId = (blockArray[i] & 255) << 4 | value;
+            int newId = this.mapBlockIdOrHashedId(session, oldId);
+
+            blockArray[i] = (byte) (newId >> 4);
+
+            i /= 2;
+            if (i % 2 == 0) {
+                blockData[i] = (byte) ((blockData[i] & 0xF0) | (newId & 0xF));
+            } else {
+                blockData[i] = (byte) ((blockData[i] & 0xF) | ((newId & 0xF) << 4));
+            }
+        }
+
+        newBuffer.writeBytes(blockArray);
+        newBuffer.writeBytes(blockData);
     }
 
     private void mapBlockPaletteV9_8(UserSession session, int version, ByteBuf buffer, ByteBuf newBuffer) {
@@ -159,35 +194,39 @@ public class BlockMapper_v844 extends BaseBlockMapper {
         }
 
         for (int layer = 0; layer < layers; layer++) {
-            final short header = buffer.readUnsignedByte();
-            newBuffer.writeByte(header);
-            final int bitArrayVersion = header >> 1;
-            if (bitArrayVersion == 127) {
-                continue;
+            mapBlockPalette(session, buffer, newBuffer);
+        }
+    }
+
+    private void mapBlockPalette(UserSession session, ByteBuf buffer, ByteBuf newBuffer) {
+        final short header = buffer.readUnsignedByte();
+        newBuffer.writeByte(header);
+        final int bitArrayVersion = header >> 1;
+        if (bitArrayVersion == 127) {
+            return;
+        }
+
+        final BitArrayVersion bitVersion = BitArrayVersion.get(bitArrayVersion, true);
+
+        int wordCount = MathUtils.ceil(4096F / BitArrayVersion.values()[bitVersion.ordinal()].entriesPerWord);
+        if (bitVersion != BitArrayVersion.V0) {
+            for (int word = 0; word < wordCount; word++) {
+                newBuffer.writeIntLE(buffer.readIntLE());
             }
+        }
 
-            final BitArrayVersion bitVersion = BitArrayVersion.get(bitArrayVersion, true);
+        final int size;
 
-            int wordCount = MathUtils.ceil(4096F / BitArrayVersion.values()[bitVersion.ordinal()].entriesPerWord);
-            if (bitVersion != BitArrayVersion.V0) {
-                for (int word = 0; word < wordCount; word++) {
-                    newBuffer.writeIntLE(buffer.readIntLE());
-                }
-            }
+        if (bitVersion == BitArrayVersion.V0) {
+            size = 1;
+        } else {
+            size = VarInts.readInt(buffer);
+            VarInts.writeInt(newBuffer, size);
+        }
 
-            final int size;
-
-            if (bitVersion == BitArrayVersion.V0) {
-                size = 1;
-            } else {
-                size = VarInts.readInt(buffer);
-                VarInts.writeInt(newBuffer, size);
-            }
-
-            // It's a bad idea to map block like this since it allow uhh well duplicate block id! But it works then it works.
-            for (int paletteIndex = 0; paletteIndex < size; paletteIndex++) {
-                VarInts.writeInt(newBuffer, this.mapBlockIdOrHashedId(session, VarInts.readInt(buffer)));
-            }
+        // It's a bad idea to map block like this since it allow uhh well duplicate block id! But it works then it works.
+        for (int paletteIndex = 0; paletteIndex < size; paletteIndex++) {
+            VarInts.writeInt(newBuffer, this.mapBlockIdOrHashedId(session, VarInts.readInt(buffer)));
         }
     }
 }
