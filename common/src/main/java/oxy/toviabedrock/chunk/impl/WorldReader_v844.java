@@ -123,6 +123,7 @@ public class WorldReader_v844 extends WorldReaderBase {
                         }
                     }
                 }
+            } catch (Exception ignored) {
             } finally {
                 buffer.release();
             }

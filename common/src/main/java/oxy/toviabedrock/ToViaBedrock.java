@@ -2,11 +2,13 @@ package oxy.toviabedrock;
 
 import org.cloudburstmc.protocol.bedrock.codec.BedrockCodec;
 import org.cloudburstmc.protocol.bedrock.codec.BedrockCodecHelper;
+import org.cloudburstmc.protocol.bedrock.codec.v800.Bedrock_v800;
 import org.cloudburstmc.protocol.bedrock.codec.v818.Bedrock_v818;
 import org.cloudburstmc.protocol.bedrock.codec.v819.Bedrock_v819;
 import org.cloudburstmc.protocol.bedrock.codec.v827.Bedrock_v827;
 import org.cloudburstmc.protocol.bedrock.data.EncodingSettings;
 import oxy.toviabedrock.base.ProtocolToProtocol;
+import oxy.toviabedrock.protocols.v818to800.Protocol818to800;
 import oxy.toviabedrock.protocols.v827to818and819.Protocol827to819;
 import oxy.toviabedrock.protocols.v844to827.Protocol844to827;
 
@@ -26,6 +28,7 @@ public class ToViaBedrock {
         SUPPORTED_PROTOCOLS.put(Bedrock_v827.CODEC.getProtocolVersion(), new Protocol844to827());
         SUPPORTED_PROTOCOLS.put(Bedrock_v819.CODEC.getProtocolVersion(), new Protocol827to819(Bedrock_v819.CODEC));
         SUPPORTED_PROTOCOLS.put(Bedrock_v818.CODEC.getProtocolVersion(), new Protocol827to819(Bedrock_v818.CODEC));
+        SUPPORTED_PROTOCOLS.put(Bedrock_v800.CODEC.getProtocolVersion(), new Protocol818to800());
     }
 
     public static List<ProtocolToProtocol> getTranslators(int target, int client) {

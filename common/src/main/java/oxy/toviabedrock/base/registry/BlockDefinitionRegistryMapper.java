@@ -1,6 +1,5 @@
 package oxy.toviabedrock.base.registry;
 
-import org.cloudburstmc.protocol.bedrock.codec.v291.serializer.UpdateBlockSerializer_v291;
 import org.cloudburstmc.protocol.bedrock.data.definitions.BlockDefinition;
 import org.cloudburstmc.protocol.common.DefinitionRegistry;
 import oxy.toviabedrock.base.Mapper;
