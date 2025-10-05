@@ -27,7 +27,9 @@ public class BaseEntityMapper extends Mapper {
 
     @Override
     public void init(UserSession session) {
-        session.put(new BaseEntityRemappingStorage(session));
+        if (session.get(BaseEntityRemappingStorage.class) == null) {
+            session.put(new BaseEntityRemappingStorage(session));
+        }
     }
 
     @Override
@@ -46,7 +48,6 @@ public class BaseEntityMapper extends Mapper {
             final MappedEntity mappedEntity = this.identifierToMapped.get(packet.getIdentifier());
             final BaseEntityRemappingStorage storage = wrapped.session().get(BaseEntityRemappingStorage.class);
 
-            storage.remove(packet.getUniqueEntityId());
             if (mappedEntity != null) {
                 storage.add(packet.getRuntimeEntityId(), packet.getUniqueEntityId(), packet.getIdentifier(), mappedEntity.showRealName);
 
@@ -59,7 +60,7 @@ public class BaseEntityMapper extends Mapper {
                 }
                 packet.setIdentifier(mappedEntity.identifier);
             } else {
-                storage.remove(packet.getUniqueEntityId());
+//                storage.remove(packet.getUniqueEntityId());
             }
         });
 
