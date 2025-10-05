@@ -9,10 +9,7 @@ import org.cloudburstmc.protocol.bedrock.data.definitions.ItemDefinition;
 import org.cloudburstmc.protocol.bedrock.data.definitions.SimpleItemDefinition;
 import org.cloudburstmc.protocol.bedrock.data.inventory.ItemData;
 import org.cloudburstmc.protocol.bedrock.data.inventory.transaction.InventoryActionData;
-import org.cloudburstmc.protocol.bedrock.packet.AddItemEntityPacket;
-import org.cloudburstmc.protocol.bedrock.packet.InventoryContentPacket;
-import org.cloudburstmc.protocol.bedrock.packet.InventorySlotPacket;
-import org.cloudburstmc.protocol.bedrock.packet.InventoryTransactionPacket;
+import org.cloudburstmc.protocol.bedrock.packet.*;
 import oxy.toviabedrock.base.Mapper;
 import oxy.toviabedrock.base.ProtocolToProtocol;
 import oxy.toviabedrock.base.mappers.storage.BaseItemRemappingStorage;
@@ -104,12 +101,10 @@ public class BaseItemMapper extends Mapper {
             return null;
         }
 
-        String oldIdentifier = this.identifierToIdentifier.get(definition.getIdentifier());
-        if (oldIdentifier != null) {
-            return new SimpleItemDefinition(oldIdentifier, mapped.getRuntimeId(), mapped.getVersion(), mapped.isComponentBased(), mapped.getComponentData());
-        }
-
-        return mapped;
+        final NbtMapBuilder mapBuilder = NbtMap.builder();
+        mapBuilder.put("TOVBHash", definition.getIdentifier().hashCode());
+        final String oldIdentifier = this.identifierToIdentifier.get(definition.getIdentifier());
+        return new SimpleItemDefinition(oldIdentifier != null ? oldIdentifier : mapped.getIdentifier(), mapped.getRuntimeId(), mapped.getVersion(), mapped.isComponentBased(), mapBuilder.build());
     }
 
     protected ItemData mapItemAndApplyHash(UserSession session, ItemData data) {
@@ -138,9 +133,7 @@ public class BaseItemMapper extends Mapper {
         nbtBuilder.put("display", display.build());
         nbtBuilder.put("TOVBHash", hashed);
 
-        return new TOVBItemData(mapped, data.getDamage(),
-                data.getCount(), nbtBuilder.build(), data.getCanPlace(),
-                data.getCanBreak(), data.getBlockingTicks(), data.getBlockDefinition(), data.isUsingNetId(), data.getNetId());
+        return new TOVBItemData(mapped, data.getDamage(), data.getCount(), nbtBuilder.build(), data.getCanPlace(), data.getCanBreak(), data.getBlockingTicks(), data.getBlockDefinition(), data.isUsingNetId(), data.getNetId());
     }
 
     // I know this is a bad idea since we should properly track the item instead but oh well.

@@ -1,4 +1,4 @@
-package oxy.toviabedrock.mappers;
+package oxy.toviabedrock.mappers.v844;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;

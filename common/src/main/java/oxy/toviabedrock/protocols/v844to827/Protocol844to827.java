@@ -3,14 +3,15 @@ package oxy.toviabedrock.protocols.v844to827;
 import org.cloudburstmc.protocol.bedrock.codec.v827.Bedrock_v827;
 import org.cloudburstmc.protocol.bedrock.codec.v844.Bedrock_v844;
 import org.cloudburstmc.protocol.bedrock.data.ExperimentData;
-import org.cloudburstmc.protocol.bedrock.packet.BedrockPacketType;
-import org.cloudburstmc.protocol.bedrock.packet.ResourcePackStackPacket;
-import org.cloudburstmc.protocol.bedrock.packet.StartGamePacket;
+import org.cloudburstmc.protocol.bedrock.data.entity.EntityDataMap;
+import org.cloudburstmc.protocol.bedrock.data.entity.EntityFlag;
+import org.cloudburstmc.protocol.bedrock.packet.*;
 import oxy.toviabedrock.base.ProtocolToProtocol;
-import oxy.toviabedrock.mappers.BlockMapper_v844;
-import oxy.toviabedrock.mappers.ItemMapper_v844;
+import oxy.toviabedrock.mappers.v844.BlockMapper_v844;
+import oxy.toviabedrock.mappers.v844.ItemMapper_v844;
 
 import java.util.Arrays;
+import java.util.EnumSet;
 
 public class Protocol844to827 extends ProtocolToProtocol {
     public Protocol844to827() {
@@ -56,5 +57,19 @@ public class Protocol844to827 extends ProtocolToProtocol {
             // We want to add support for some of the new items.
             packet.getExperiments().add(new ExperimentData("y_2025_drop_3", true));
         });
+
+        this.registerClientbound(AddEntityPacket.class, wrapped -> cleanMetadata(((AddEntityPacket)wrapped.getPacket()).getMetadata()));
+        this.registerClientbound(SetEntityDataPacket.class, wrapped -> cleanMetadata(((SetEntityDataPacket)wrapped.getPacket()).getMetadata()));
+    }
+
+    private void cleanMetadata(final EntityDataMap metadata) {
+        if (metadata == null) {
+            return;
+        }
+
+        EnumSet<EntityFlag> flags = metadata.getFlags();
+        if (flags != null) {
+            flags.remove(EntityFlag.CAN_USE_VERTICAL_MOVEMENT_ACTION);
+        }
     }
 }

@@ -7,7 +7,7 @@ import org.cloudburstmc.protocol.bedrock.data.entity.EntityDataMap;
 import org.cloudburstmc.protocol.bedrock.data.entity.EntityFlag;
 import org.cloudburstmc.protocol.bedrock.packet.*;
 import oxy.toviabedrock.base.ProtocolToProtocol;
-import oxy.toviabedrock.mappers.BlockMapper_v844;
+import oxy.toviabedrock.mappers.v844.BlockMapper_v844;
 
 import java.util.Arrays;
 import java.util.EnumSet;

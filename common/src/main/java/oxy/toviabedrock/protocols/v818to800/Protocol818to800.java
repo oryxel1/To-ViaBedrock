@@ -5,12 +5,11 @@ import org.cloudburstmc.protocol.bedrock.codec.v818.Bedrock_v818;
 import org.cloudburstmc.protocol.bedrock.data.AuthoritativeMovementMode;
 import org.cloudburstmc.protocol.bedrock.data.ExperimentData;
 import org.cloudburstmc.protocol.bedrock.data.entity.EntityDataMap;
-import org.cloudburstmc.protocol.bedrock.data.entity.EntityDataTypes;
 import org.cloudburstmc.protocol.bedrock.data.entity.EntityFlag;
 import org.cloudburstmc.protocol.bedrock.packet.*;
 import oxy.toviabedrock.base.ProtocolToProtocol;
 import oxy.toviabedrock.base.mappers.BaseEntityMapper;
-import oxy.toviabedrock.mappers.ItemMapper_v844;
+import oxy.toviabedrock.mappers.v844.ItemMapper_v844;
 
 import java.util.Arrays;
 import java.util.EnumSet;

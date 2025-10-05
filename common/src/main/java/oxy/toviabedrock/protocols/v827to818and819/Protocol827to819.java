@@ -7,8 +7,8 @@ import org.cloudburstmc.protocol.bedrock.codec.v827.Bedrock_v827;
 import org.cloudburstmc.protocol.bedrock.packet.BedrockPacketType;
 import oxy.toviabedrock.base.ProtocolToProtocol;
 import oxy.toviabedrock.base.mappers.BaseEntityMapper;
-import oxy.toviabedrock.mappers.BlockMapper_v844;
-import oxy.toviabedrock.mappers.ItemMapper_v844;
+import oxy.toviabedrock.mappers.v844.BlockMapper_v844;
+import oxy.toviabedrock.mappers.v844.ItemMapper_v844;
 
 import java.util.Arrays;
 
