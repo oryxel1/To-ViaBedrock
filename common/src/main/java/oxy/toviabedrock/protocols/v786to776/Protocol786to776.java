@@ -1,37 +1,29 @@
-package oxy.toviabedrock.protocols.v818to800;
+package oxy.toviabedrock.protocols.v786to776;
 
-import org.cloudburstmc.protocol.bedrock.codec.v800.Bedrock_v800;
-import org.cloudburstmc.protocol.bedrock.codec.v818.Bedrock_v818;
-import org.cloudburstmc.protocol.bedrock.data.AuthoritativeMovementMode;
+import org.cloudburstmc.protocol.bedrock.codec.v776.Bedrock_v776;
+import org.cloudburstmc.protocol.bedrock.codec.v786.Bedrock_v786;
 import org.cloudburstmc.protocol.bedrock.data.ExperimentData;
 import org.cloudburstmc.protocol.bedrock.data.entity.EntityDataMap;
-import org.cloudburstmc.protocol.bedrock.data.entity.EntityDataTypes;
 import org.cloudburstmc.protocol.bedrock.data.entity.EntityFlag;
 import org.cloudburstmc.protocol.bedrock.packet.*;
 import oxy.toviabedrock.base.ProtocolToProtocol;
-import oxy.toviabedrock.base.mappers.BaseEntityMapper;
-import oxy.toviabedrock.mappers.ItemMapper_v844;
+import oxy.toviabedrock.mappers.BlockMapper_v844;
 
 import java.util.Arrays;
 import java.util.EnumSet;
 
-public class Protocol818to800 extends ProtocolToProtocol {
-    public Protocol818to800() {
-        super(Bedrock_v818.CODEC, Bedrock_v800.CODEC);
+public class Protocol786to776 extends ProtocolToProtocol {
+    public Protocol786to776() {
+        super(Bedrock_v786.CODEC, Bedrock_v776.CODEC);
     }
 
     @Override
     public void initMappers() {
-        this.mappers.add(new ItemMapper_v844(this) {
+        this.mappers.add(new BlockMapper_v844(this) {
             @Override
-            protected void initItemMappings() {
-                this.itemIdentifierToMappedIdentifier.put("minecraft:music_disc_tears", "minecraft:music_disc_chirp");
-            }
-        });
-        this.mappers.add(new BaseEntityMapper(this) {
-            @Override
-            protected void initEntityMappings() {
-                this.identifierToMapped.put("minecraft:happy_ghast", new MappedEntity("minecraft:ghast", true));
+            protected void initBlockMappings() {
+                loadBlockMappingFromFile("v786to776/blockIds_v786to776.json");
+                loadHashedBlockMappingFromFile("v786to776/blockIds_v786to776_hashed.json");
             }
         });
         super.initMappers();
@@ -42,21 +34,23 @@ public class Protocol818to800 extends ProtocolToProtocol {
         Arrays.stream(BedrockPacketType.values()).forEach(this::mapDirectlyServerbound);
         Arrays.stream(BedrockPacketType.values()).forEach(this::mapDirectlyClientbound);
 
+        this.ignoreClientbound(UpdateClientOptionsPacket.class);
+        this.ignoreClientbound(PlayerVideoCapturePacket.class);
+
+        this.ignoreServerbound(LevelSoundEvent1Packet.class);
+        this.ignoreServerbound(LevelSoundEvent2Packet.class);
+
         this.registerClientbound(StartGamePacket.class, wrapped -> {
             final StartGamePacket packet = (StartGamePacket) wrapped.getPacket();
-            packet.setAuthoritativeMovementMode(AuthoritativeMovementMode.SERVER_WITH_REWIND);
 
             packet.getExperiments().clear();
-            packet.getExperiments().add(new ExperimentData("experimental_graphics", true));
-            packet.getExperiments().add(new ExperimentData("y_2025_drop_2", true));
-            packet.getExperiments().add(new ExperimentData("locator_bar", true));
+            packet.getExperiments().add(new ExperimentData("y_2025_drop_1", true));
         });
 
         this.registerClientbound(ResourcePackStackPacket.class, wrapped -> {
             final ResourcePackStackPacket packet = (ResourcePackStackPacket) wrapped.getPacket();
             packet.getExperiments().clear();
-            packet.getExperiments().add(new ExperimentData("y_2025_drop_2", true));
-            packet.getExperiments().add(new ExperimentData("locator_bar", true));
+            packet.getExperiments().add(new ExperimentData("y_2025_drop_1", true));
         });
 
         this.registerClientbound(AddEntityPacket.class, wrapped -> cleanMetadata(((AddEntityPacket)wrapped.getPacket()).getMetadata()));
@@ -70,7 +64,9 @@ public class Protocol818to800 extends ProtocolToProtocol {
 
         EnumSet<EntityFlag> flags = metadata.getFlags();
         if (flags != null) {
-            flags.remove(EntityFlag.BODY_ROTATION_ALWAYS_FOLLOWS_HEAD);
+            flags.remove(EntityFlag.BODY_ROTATION_AXIS_ALIGNED);
+            flags.remove(EntityFlag.COLLIDABLE);
+            flags.remove(EntityFlag.WASD_AIR_CONTROLLED);
         }
     }
 }

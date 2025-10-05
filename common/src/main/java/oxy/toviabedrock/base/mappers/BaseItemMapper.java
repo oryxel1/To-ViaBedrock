@@ -1,5 +1,7 @@
 package oxy.toviabedrock.base.mappers;
 
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import org.cloudburstmc.nbt.NbtMap;
 import org.cloudburstmc.nbt.NbtMapBuilder;
 import org.cloudburstmc.nbt.NbtType;
@@ -18,10 +20,7 @@ import oxy.toviabedrock.session.UserSession;
 import oxy.toviabedrock.utils.HashMapWithHashed;
 import oxy.toviabedrock.utils.definition.TOVBItemData;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class BaseItemMapper extends Mapper {
     // These are to map identifier that changed identifier, eg: minecraft:chain -> minecraft:iron_chain or vice versa.
@@ -36,6 +35,18 @@ public class BaseItemMapper extends Mapper {
     }
 
     protected void initItemMappings() {
+    }
+
+    protected final void loadItemMappingsFromFile(String name) {
+        try {
+            final String jsonString = new String(Objects.requireNonNull(BaseItemMapper.class.getResourceAsStream("/items/" + name)).readAllBytes());
+            final JsonObject object = JsonParser.parseString(jsonString).getAsJsonObject();
+            for (String key : object.keySet()) {
+                this.itemIdentifierToMappedIdentifier.put(key, object.get(key).getAsString());
+            }
+        } catch (Exception exception) {
+            throw new RuntimeException(exception);
+        }
     }
 
     @Override
