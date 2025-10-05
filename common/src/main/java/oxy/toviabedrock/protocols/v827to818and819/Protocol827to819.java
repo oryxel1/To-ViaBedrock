@@ -3,7 +3,6 @@ package oxy.toviabedrock.protocols.v827to818and819;
 import org.cloudburstmc.protocol.bedrock.codec.BedrockCodec;
 import org.cloudburstmc.protocol.bedrock.codec.v818.Bedrock_v818;
 import org.cloudburstmc.protocol.bedrock.codec.v819.Bedrock_v819;
-import org.cloudburstmc.protocol.bedrock.codec.v827.Bedrock_v827;
 import org.cloudburstmc.protocol.bedrock.packet.BedrockPacketType;
 import oxy.toviabedrock.base.ProtocolToProtocol;
 import oxy.toviabedrock.base.mappers.BaseEntityMapper;
@@ -13,8 +12,8 @@ import oxy.toviabedrock.mappers.v844.ItemMapper_v844;
 import java.util.Arrays;
 
 public class Protocol827to819 extends ProtocolToProtocol {
-    public Protocol827to819(BedrockCodec translatedCodec) {
-        super(Bedrock_v827.CODEC, translatedCodec);
+    public Protocol827to819(BedrockCodec originalCodec, BedrockCodec translatedCodec) {
+        super(originalCodec, translatedCodec);
     }
 
     @Override

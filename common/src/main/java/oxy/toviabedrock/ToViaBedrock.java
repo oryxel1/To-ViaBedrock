@@ -2,6 +2,7 @@ package oxy.toviabedrock;
 
 import org.cloudburstmc.protocol.bedrock.codec.BedrockCodec;
 import org.cloudburstmc.protocol.bedrock.codec.BedrockCodecHelper;
+import org.cloudburstmc.protocol.bedrock.codec.v748.Bedrock_v748;
 import org.cloudburstmc.protocol.bedrock.codec.v766.Bedrock_v766;
 import org.cloudburstmc.protocol.bedrock.codec.v776.Bedrock_v776;
 import org.cloudburstmc.protocol.bedrock.codec.v786.Bedrock_v786;
@@ -11,6 +12,7 @@ import org.cloudburstmc.protocol.bedrock.codec.v819.Bedrock_v819;
 import org.cloudburstmc.protocol.bedrock.codec.v827.Bedrock_v827;
 import org.cloudburstmc.protocol.bedrock.data.EncodingSettings;
 import oxy.toviabedrock.base.ProtocolToProtocol;
+import oxy.toviabedrock.protocols.v766to748.Protocol766to748;
 import oxy.toviabedrock.protocols.v776to766.Protocol776to766;
 import oxy.toviabedrock.protocols.v786to776.Protocol786to776;
 import oxy.toviabedrock.protocols.v800to786.Protocol800to786;
@@ -32,12 +34,13 @@ public class ToViaBedrock {
 //        SUPPORTED_PROTOCOLS.put(Bedrock_v291.CODEC.getProtocolVersion(), new Protocol291to282());
 
         SUPPORTED_PROTOCOLS.put(Bedrock_v827.CODEC.getProtocolVersion(), new Protocol844to827());
-        SUPPORTED_PROTOCOLS.put(Bedrock_v819.CODEC.getProtocolVersion(), new Protocol827to819(Bedrock_v819.CODEC));
-        SUPPORTED_PROTOCOLS.put(Bedrock_v818.CODEC.getProtocolVersion(), new Protocol827to819(Bedrock_v818.CODEC));
+        SUPPORTED_PROTOCOLS.put(Bedrock_v819.CODEC.getProtocolVersion(), new Protocol827to819(Bedrock_v827.CODEC, Bedrock_v819.CODEC));
+        SUPPORTED_PROTOCOLS.put(Bedrock_v818.CODEC.getProtocolVersion(), new Protocol827to819(Bedrock_v819.CODEC, Bedrock_v818.CODEC));
         SUPPORTED_PROTOCOLS.put(Bedrock_v800.CODEC.getProtocolVersion(), new Protocol818to800());
         SUPPORTED_PROTOCOLS.put(Bedrock_v786.CODEC.getProtocolVersion(), new Protocol800to786());
         SUPPORTED_PROTOCOLS.put(Bedrock_v776.CODEC.getProtocolVersion(), new Protocol786to776());
         SUPPORTED_PROTOCOLS.put(Bedrock_v766.CODEC.getProtocolVersion(), new Protocol776to766());
+        SUPPORTED_PROTOCOLS.put(Bedrock_v748.CODEC.getProtocolVersion(), new Protocol766to748());
     }
 
     public static List<ProtocolToProtocol> getTranslators(int target, int client) {
