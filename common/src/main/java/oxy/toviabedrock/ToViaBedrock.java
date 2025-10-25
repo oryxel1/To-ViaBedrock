@@ -2,6 +2,7 @@ package oxy.toviabedrock;
 
 import org.cloudburstmc.protocol.bedrock.codec.BedrockCodec;
 import org.cloudburstmc.protocol.bedrock.codec.BedrockCodecHelper;
+import org.cloudburstmc.protocol.bedrock.codec.v729.Bedrock_v729;
 import org.cloudburstmc.protocol.bedrock.codec.v748.Bedrock_v748;
 import org.cloudburstmc.protocol.bedrock.codec.v766.Bedrock_v766;
 import org.cloudburstmc.protocol.bedrock.codec.v776.Bedrock_v776;
@@ -12,6 +13,7 @@ import org.cloudburstmc.protocol.bedrock.codec.v819.Bedrock_v819;
 import org.cloudburstmc.protocol.bedrock.codec.v827.Bedrock_v827;
 import org.cloudburstmc.protocol.bedrock.data.EncodingSettings;
 import oxy.toviabedrock.base.ProtocolToProtocol;
+import oxy.toviabedrock.protocols.v748to729.Protocol748to729;
 import oxy.toviabedrock.protocols.v766to748.Protocol766to748;
 import oxy.toviabedrock.protocols.v776to766.Protocol776to766;
 import oxy.toviabedrock.protocols.v786to776.Protocol786to776;
@@ -41,6 +43,7 @@ public class ToViaBedrock {
         SUPPORTED_PROTOCOLS.put(Bedrock_v776.CODEC.getProtocolVersion(), new Protocol786to776());
         SUPPORTED_PROTOCOLS.put(Bedrock_v766.CODEC.getProtocolVersion(), new Protocol776to766());
         SUPPORTED_PROTOCOLS.put(Bedrock_v748.CODEC.getProtocolVersion(), new Protocol766to748());
+//        SUPPORTED_PROTOCOLS.put(Bedrock_v729.CODEC.getProtocolVersion(), new Protocol748to729());
     }
 
     public static List<ProtocolToProtocol> getTranslators(int target, int client) {
@@ -54,10 +57,14 @@ public class ToViaBedrock {
             if (protocolVersion < client) {
                 break;
             }
+            if (protocolVersion >= target) {
+                continue;
+            }
 
             translators.add(protocol.getValue());
         }
 
+//        System.out.println(Arrays.toString(translators.toArray()));
         return translators;
     }
 
