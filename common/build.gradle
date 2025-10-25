@@ -22,7 +22,7 @@ dependencies {
 
 shadowJar {
     dependencies {
-        include(dependency("org.cloudburstmc.protocol:bedrock-codec:3.0.0.Beta8-20250929.213851-8"))
+        include(dependency("org.cloudburstmc.protocol:bedrock-codec:3.0.0.Beta8-SNAPSHOT"))
         include(dependency("org.cloudburstmc.protocol:bedrock-connection:3.0.0.Beta8-20250929.213851-8"))
         include(dependency("org.cloudburstmc.fastutil:core:8.5.15"))
         include(dependency("org.cloudburstmc.fastutil.sets:object-sets:8.5.15"))
