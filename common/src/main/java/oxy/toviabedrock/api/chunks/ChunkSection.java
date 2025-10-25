@@ -1,7 +1,6 @@
 package oxy.toviabedrock.api.chunks;
 
 import lombok.Getter;
-import org.cloudburstmc.protocol.common.util.Preconditions;
 
 import java.util.List;
 
@@ -14,12 +13,16 @@ public class ChunkSection {
     }
 
     public int get(int x, int y, int z, int layer) {
-        Preconditions.checkElementIndex(layer, this.dataPalettes.size());
+        if (layer < 0 || layer > this.dataPalettes.size() - 1) {
+            return 0;
+        }
         return this.dataPalettes.get(layer).get(index(x, y, z));
     }
 
     public void set(int x, int y, int z, int layer, int id) {
-        Preconditions.checkElementIndex(layer, this.dataPalettes.size());
+        if (layer < 0 || layer > this.dataPalettes.size() - 1) {
+            return;
+        }
         this.dataPalettes.get(layer).set(index(x, y, z), id);
     }
 
