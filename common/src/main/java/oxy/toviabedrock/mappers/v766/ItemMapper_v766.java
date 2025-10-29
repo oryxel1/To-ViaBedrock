@@ -13,12 +13,12 @@ import oxy.toviabedrock.base.ProtocolToProtocol;
 import oxy.toviabedrock.base.mappers.BaseItemMapper;
 import oxy.toviabedrock.mappers.v844.ItemMapper_v844;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashSet;
 import java.util.Objects;
+import java.util.Set;
 
 public class ItemMapper_v766 extends ItemMapper_v844 {
-    protected List<String> vanillaItemIdentifiers;
+    protected Set<String> vanillaItemIdentifiers;
 
     public ItemMapper_v766(ProtocolToProtocol translator) {
         super(translator);
@@ -26,7 +26,7 @@ public class ItemMapper_v766 extends ItemMapper_v844 {
 
     protected void loadVanillaIdentifiersFromFile(String name) {
         if (this.vanillaItemIdentifiers == null) {
-            this.vanillaItemIdentifiers = new ArrayList<>();
+            this.vanillaItemIdentifiers = new HashSet<>();
         }
         try {
             final String jsonString = new String(Objects.requireNonNull(BaseItemMapper.class.getResourceAsStream("/items/vanilla/" + name)).readAllBytes());
@@ -45,7 +45,9 @@ public class ItemMapper_v766 extends ItemMapper_v844 {
         super.registerProtocol();
         this.registerClientbound(ItemComponentPacket.class, wrapped -> {
             final ItemComponentPacket packet = (ItemComponentPacket) wrapped.getPacket();
+            // This is NOT a typo, older versions don't need you to send the vanilla item definition.
             packet.getItems().removeIf(definition -> this.vanillaItemIdentifiers.contains(definition.getIdentifier()));
+
             for (int i = 0; i < packet.getItems().size(); i++) {
                 final ItemDefinition definition = packet.getItems().get(i);
 

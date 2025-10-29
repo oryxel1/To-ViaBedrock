@@ -28,8 +28,8 @@ public class Protocol748to729 extends ProtocolToProtocol {
         this.mappers.add(new ItemMapper_v766(this) {
             @Override
             protected void initItemMappings() {
-                loadVanillaIdentifiersFromFile("vanilla_items_v729.json");
                 loadItemMappingsFromFile("itemIdentifiers_v748to729.json");
+                loadVanillaIdentifiersFromFile("vanilla_items_v729.json");
             }
         });
         super.initMappers();
