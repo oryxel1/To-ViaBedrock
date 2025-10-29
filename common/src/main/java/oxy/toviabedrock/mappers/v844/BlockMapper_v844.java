@@ -12,7 +12,6 @@ import oxy.toviabedrock.api.chunks.bitarray.BitArrayVersion;
 import oxy.toviabedrock.base.ProtocolToProtocol;
 import oxy.toviabedrock.base.definitions.UnknownBlockDefinition;
 import oxy.toviabedrock.base.mappers.BaseBlockMapper;
-import oxy.toviabedrock.base.mappers.storage.BaseItemRemappingStorage;
 import oxy.toviabedrock.chunk.WorldTracker;
 import oxy.toviabedrock.session.UserSession;
 import oxy.toviabedrock.utils.MathUtils;
@@ -35,13 +34,7 @@ public class BlockMapper_v844 extends BaseBlockMapper {
     );
 
     @Override
-    public void init(UserSession session) {
-        session.put(new BaseItemRemappingStorage(session));
-    }
-
-    @Override
     protected void registerProtocol() {
-//        System.out.println("Register protocol: " + translator.getTranslatedCodec().getProtocolVersion());
         super.registerProtocol();
 
         this.registerServerbound(InventoryTransactionPacket.class, wrapped -> {
@@ -50,7 +43,6 @@ public class BlockMapper_v844 extends BaseBlockMapper {
                 int newId = wrapped.session().get(WorldTracker.class).get(packet.getBlockPosition().getX(), packet.getBlockPosition().getY(), packet.getBlockPosition().getZ(), 0);
 
                 if (newId != -1) {
-//                    System.out.println(newId + "," + packet.getBlockDefinition().getRuntimeId());
                     packet.setBlockDefinition(new UnknownBlockDefinition(newId));
                 }
             }

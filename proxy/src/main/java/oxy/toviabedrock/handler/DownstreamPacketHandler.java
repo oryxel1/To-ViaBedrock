@@ -15,8 +15,6 @@ import org.jose4j.jws.JsonWebSignature;
 import org.jose4j.jwx.HeaderParameterNames;
 import org.jose4j.lang.JoseException;
 import oxy.toviabedrock.ToViaBedrock;
-import oxy.toviabedrock.base.ProtocolToProtocol;
-import oxy.toviabedrock.base.WrappedBedrockPacket;
 import oxy.toviabedrock.base.registry.BlockDefinitionRegistryMapper;
 import oxy.toviabedrock.base.registry.UnknownBlockDefinitionRegistry;
 import oxy.toviabedrock.session.ProxyUserSession;

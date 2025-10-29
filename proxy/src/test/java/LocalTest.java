@@ -1,3 +1,4 @@
+import org.cloudburstmc.protocol.bedrock.codec.v819.Bedrock_v819;
 import org.cloudburstmc.protocol.bedrock.codec.v844.Bedrock_v844;
 import oxy.toviabedrock.ToViaBedrockProxy;
 

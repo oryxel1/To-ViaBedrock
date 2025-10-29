@@ -24,11 +24,23 @@ public class BaseItemMapper extends Mapper {
     protected final Map<String, String> identifierToIdentifier = new HashMap<>();
     // These are to map new identifier to old one if it's not supported, eg: minecraft:copper_chain -> minecraft:iron_chain.
     protected final HashMapWithHashed<String, String> itemIdentifierToMappedIdentifier = new HashMapWithHashed<>();
+    // There are cases where the item data needed to be process directly instead of just the item definition.
+    protected final List<ItemMapper> itemDataMapper = new ArrayList<>();
+    public interface ItemMapper {
+        TOVBItemData process(TOVBItemData item);
+    }
 
     public BaseItemMapper(ProtocolToProtocol translator) {
         super(translator);
 
         this.initItemMappings();
+    }
+
+    @Override
+    protected void init(UserSession session) {
+        if (session.get(BaseItemRemappingStorage.class) == null) {
+            session.put(new BaseItemRemappingStorage(session));
+        }
     }
 
     protected void initItemMappings() {
@@ -133,7 +145,12 @@ public class BaseItemMapper extends Mapper {
         nbtBuilder.put("display", display.build());
         nbtBuilder.put("TOVBHash", hashed);
 
-        return new TOVBItemData(mapped, data.getDamage(), data.getCount(), nbtBuilder.build(), data.getCanPlace(), data.getCanBreak(), data.getBlockingTicks(), data.getBlockDefinition(), data.isUsingNetId(), data.getNetId());
+        TOVBItemData itemData = new TOVBItemData(mapped, data.getDamage(), data.getCount(), nbtBuilder.build(), data.getCanPlace(), data.getCanBreak(), data.getBlockingTicks(), data.getBlockDefinition(), data.isUsingNetId(), data.getNetId());
+        for (ItemMapper mapper : this.itemDataMapper) {
+            itemData = mapper.process(itemData);
+        }
+
+        return itemData;
     }
 
     // I know this is a bad idea since we should properly track the item instead but oh well.
@@ -166,6 +183,7 @@ public class BaseItemMapper extends Mapper {
                 if (lore.size() == 1) {
                     displayNbt.remove("Lore");
                 } else {
+                    // Hardcoded code blah, blah, blah, yeah I don't give a fuck :D.
                     final String lore1 = "§r§7Item mapped from: " + mapped.getIdentifier() + " (" + data.getTag().getInt("TOVBHash") + ").";
                     lore.remove(lore1);
                     displayNbt.putList("Lore", NbtType.STRING, lore);

@@ -1,5 +1,8 @@
 package oxy.toviabedrock.utils;
 
+import org.cloudburstmc.math.TrigMath;
+import org.cloudburstmc.math.vector.Vector3f;
+
 public class MathUtils {
     public static int ceil(float floatNumber) {
         int truncated = (int) floatNumber;
@@ -16,5 +19,15 @@ public class MathUtils {
         }
 
         return value == 0 ? 0 : value > 0 ? 1 : -1;
+    }
+
+    public static Vector3f getCameraOrientation(Vector3f rotation) {
+        float f = rotation.getX() * 0.017453292F;
+        float g = -rotation.getY() * 0.017453292F;
+        float h = TrigMath.cos(g);
+        float i = TrigMath.sin(g);
+        float j = TrigMath.cos(f);
+        float k = TrigMath.sin(f);
+        return Vector3f.from(i * j, -k, h * j);
     }
 }

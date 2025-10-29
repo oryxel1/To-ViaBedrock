@@ -43,7 +43,7 @@ public class ToViaBedrock {
         SUPPORTED_PROTOCOLS.put(Bedrock_v776.CODEC.getProtocolVersion(), new Protocol786to776());
         SUPPORTED_PROTOCOLS.put(Bedrock_v766.CODEC.getProtocolVersion(), new Protocol776to766());
         SUPPORTED_PROTOCOLS.put(Bedrock_v748.CODEC.getProtocolVersion(), new Protocol766to748());
-//        SUPPORTED_PROTOCOLS.put(Bedrock_v729.CODEC.getProtocolVersion(), new Protocol748to729());
+        SUPPORTED_PROTOCOLS.put(Bedrock_v729.CODEC.getProtocolVersion(), new Protocol748to729());
     }
 
     public static List<ProtocolToProtocol> getTranslators(int target, int client) {
