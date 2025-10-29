@@ -4,16 +4,18 @@ import com.google.gson.*;
 import org.cloudburstmc.nbt.NbtMap;
 import org.cloudburstmc.protocol.bedrock.data.definitions.ItemDefinition;
 import org.cloudburstmc.protocol.bedrock.data.definitions.SimpleItemDefinition;
+import org.cloudburstmc.protocol.bedrock.data.inventory.CreativeItemData;
+import org.cloudburstmc.protocol.bedrock.data.inventory.ItemData;
 import org.cloudburstmc.protocol.bedrock.data.inventory.ItemVersion;
+import org.cloudburstmc.protocol.bedrock.packet.CreativeContentPacket;
 import org.cloudburstmc.protocol.bedrock.packet.ItemComponentPacket;
 import oxy.toviabedrock.base.ProtocolToProtocol;
 import oxy.toviabedrock.base.mappers.BaseItemMapper;
+import oxy.toviabedrock.base.mappers.storage.BaseItemRemappingStorage;
 import oxy.toviabedrock.mappers.v766.ItemMapper_v766;
+import oxy.toviabedrock.utils.definition.TOVBItemData;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 
 public class ItemMapper_v729 extends ItemMapper_v766 {
     protected Map<String, Integer> identifierToRuntimeId;
@@ -40,7 +42,7 @@ public class ItemMapper_v729 extends ItemMapper_v766 {
                 final int id = item.get("id").getAsInt();
                 this.vanillaItemIdentifiers.add(identifier);
                 this.identifierToRuntimeId.put(identifier, id);
-                this.maxItemId = id;
+                this.maxItemId = Math.max(id, this.maxItemId);
             }
         } catch (Exception exception) {
             throw new RuntimeException(exception);
@@ -52,8 +54,6 @@ public class ItemMapper_v729 extends ItemMapper_v766 {
         super.registerProtocol();
         this.registerClientbound(ItemComponentPacket.class, wrapped -> {
             final ItemComponentPacket packet = (ItemComponentPacket) wrapped.getPacket();
-            // This is NOT a typo, older versions don't need you to send the vanilla item definition.
-            packet.getItems().removeIf(definition -> this.vanillaItemIdentifiers.contains(definition.getIdentifier()));
 
             int id = this.maxItemId;
             for (int i = 0; i < packet.getItems().size(); i++) {
@@ -71,6 +71,20 @@ public class ItemMapper_v729 extends ItemMapper_v766 {
                 );
             }
         });
+
+        this.registerClientbound(CreativeContentPacket.class, wrapped -> {
+            final CreativeContentPacket packet = (CreativeContentPacket) wrapped.getPacket();
+            final Iterator<CreativeItemData> iterator = packet.getContents().iterator();
+            while (iterator.hasNext()) {
+                final CreativeItemData creative = iterator.next();
+                final ItemData data = creative.getItem();
+
+                if (!this.vanillaItemIdentifiers.contains(data.getDefinition().getIdentifier())) {
+                    System.out.println("We forget to map: " + data.getDefinition());
+//                    iterator.remove();
+                }
+            }
+        });
     }
 
     @Override
@@ -79,7 +93,7 @@ public class ItemMapper_v729 extends ItemMapper_v766 {
     }
 
     @Override
-    protected int mapRuntimeId(ItemDefinition definition) {
-        return this.identifierToRuntimeId.getOrDefault(definition.getIdentifier(), definition.getRuntimeId());
+    protected int mapRuntimeId(String identifier, int oldId) {
+        return this.identifierToRuntimeId.getOrDefault(identifier, oldId);
     }
 }

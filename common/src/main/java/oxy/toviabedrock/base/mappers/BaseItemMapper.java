@@ -115,8 +115,8 @@ public class BaseItemMapper extends Mapper {
 
         final NbtMapBuilder mapBuilder = NbtMap.builder();
         mapBuilder.put("TOVBHash", definition.getIdentifier().hashCode());
-        final String oldIdentifier = this.identifierToIdentifier.get(definition.getIdentifier());
-        return new SimpleItemDefinition(oldIdentifier != null ? oldIdentifier : mapped.getIdentifier(), mapRuntimeId(mapped), mapped.getVersion(), mapped.isComponentBased(), mapBuilder.build());
+        final String oldIdentifier = this.identifierToIdentifier.get(mapped.getIdentifier());
+        return new SimpleItemDefinition(oldIdentifier != null ? oldIdentifier : mapped.getIdentifier(), mapRuntimeId(oldIdentifier != null ? oldIdentifier : mapped.getIdentifier(), mapped.getRuntimeId()), mapped.getVersion(), mapped.isComponentBased(), mapBuilder.build());
     }
 
     protected ItemData mapItemAndApplyHash(UserSession session, ItemData data) {
@@ -126,10 +126,12 @@ public class BaseItemMapper extends Mapper {
 
         final ItemDefinition mapped = mapItemDefinitionWithOldIdentifier(session, data.getDefinition());
         if (mapped == null) {
-            int newId = mapRuntimeId(data.getDefinition());
-            if (newId != data.getDefinition().getRuntimeId()) {
-                final ItemDefinition old = data.getDefinition();
-                final SimpleItemDefinition definition = new SimpleItemDefinition(old.getIdentifier(), newId, old.getVersion(), old.isComponentBased(), old.getComponentData());
+            final ItemDefinition old = data.getDefinition();
+            final String oldIdentifier = this.identifierToIdentifier.get(old.getIdentifier());
+            int newId = mapRuntimeId(oldIdentifier != null ? oldIdentifier : old.getIdentifier(), old.getRuntimeId());
+            final SimpleItemDefinition definition = new SimpleItemDefinition(oldIdentifier != null ? oldIdentifier : old.getIdentifier(), newId, old.getVersion(), old.isComponentBased(), old.getComponentData());
+
+            if (newId != data.getDefinition().getRuntimeId() || oldIdentifier != null) {
                 return new TOVBItemData(definition, data.getDamage(), data.getCount(), data.getTag(), data.getCanPlace(), data.getCanBreak(), data.getBlockingTicks(), data.getBlockDefinition(), data.isUsingNetId(), data.getNetId());
             }
 
@@ -210,7 +212,11 @@ public class BaseItemMapper extends Mapper {
                 data.getCanBreak(), data.getBlockingTicks(), data.getBlockDefinition(), data.isUsingNetId(), data.getNetId());
     }
 
-    protected int mapRuntimeId(ItemDefinition definition) {
-        return definition.getRuntimeId();
+    protected final int mapRuntimeId(ItemDefinition definition) {
+        return mapRuntimeId(definition.getIdentifier(), definition.getRuntimeId());
+    }
+
+    protected int mapRuntimeId(String identifier, int oldId) {
+        return oldId;
     }
 }
