@@ -5,7 +5,7 @@ import org.cloudburstmc.protocol.bedrock.codec.v748.Bedrock_v748;
 import org.cloudburstmc.protocol.bedrock.packet.BedrockPacketType;
 import org.cloudburstmc.protocol.bedrock.packet.PlayerAuthInputPacket;
 import oxy.toviabedrock.base.ProtocolToProtocol;
-import oxy.toviabedrock.mappers.v766.ItemMapper_v766;
+import oxy.toviabedrock.mappers.v729.ItemMapper_v729;
 import oxy.toviabedrock.mappers.v844.BlockMapper_v844;
 import oxy.toviabedrock.utils.MathUtils;
 
@@ -25,11 +25,11 @@ public class Protocol748to729 extends ProtocolToProtocol {
                 loadHashedBlockMappingFromFile("v748to729/blockIds_v748to729_hashed.json");
             }
         });
-        this.mappers.add(new ItemMapper_v766(this) {
+        this.mappers.add(new ItemMapper_v729(this) {
             @Override
             protected void initItemMappings() {
                 loadItemMappingsFromFile("itemIdentifiers_v748to729.json");
-                loadVanillaIdentifiersFromFile("vanilla_items_v729.json");
+                loadItemRuntimeStatesFromFile("runtime_item_states_v729.json");
             }
         });
         super.initMappers();

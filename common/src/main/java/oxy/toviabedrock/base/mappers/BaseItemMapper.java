@@ -116,7 +116,7 @@ public class BaseItemMapper extends Mapper {
         final NbtMapBuilder mapBuilder = NbtMap.builder();
         mapBuilder.put("TOVBHash", definition.getIdentifier().hashCode());
         final String oldIdentifier = this.identifierToIdentifier.get(definition.getIdentifier());
-        return new SimpleItemDefinition(oldIdentifier != null ? oldIdentifier : mapped.getIdentifier(), mapped.getRuntimeId(), mapped.getVersion(), mapped.isComponentBased(), mapBuilder.build());
+        return new SimpleItemDefinition(oldIdentifier != null ? oldIdentifier : mapped.getIdentifier(), mapRuntimeId(mapped), mapped.getVersion(), mapped.isComponentBased(), mapBuilder.build());
     }
 
     protected ItemData mapItemAndApplyHash(UserSession session, ItemData data) {
@@ -126,6 +126,13 @@ public class BaseItemMapper extends Mapper {
 
         final ItemDefinition mapped = mapItemDefinitionWithOldIdentifier(session, data.getDefinition());
         if (mapped == null) {
+            int newId = mapRuntimeId(data.getDefinition());
+            if (newId != data.getDefinition().getRuntimeId()) {
+                final ItemDefinition old = data.getDefinition();
+                final SimpleItemDefinition definition = new SimpleItemDefinition(old.getIdentifier(), newId, old.getVersion(), old.isComponentBased(), old.getComponentData());
+                return new TOVBItemData(definition, data.getDamage(), data.getCount(), data.getTag(), data.getCanPlace(), data.getCanBreak(), data.getBlockingTicks(), data.getBlockDefinition(), data.isUsingNetId(), data.getNetId());
+            }
+
             return data;
         }
 
@@ -201,5 +208,9 @@ public class BaseItemMapper extends Mapper {
         return new TOVBItemData(mapped, data.getDamage(),
                 data.getCount(), tagBuilder.build(), data.getCanPlace(),
                 data.getCanBreak(), data.getBlockingTicks(), data.getBlockDefinition(), data.isUsingNetId(), data.getNetId());
+    }
+
+    protected int mapRuntimeId(ItemDefinition definition) {
+        return definition.getRuntimeId();
     }
 }
