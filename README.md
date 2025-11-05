@@ -1,4 +1,4 @@
-## ARCHIVED, GO TO [Ouranos](https://github.com/Blackjack200/Ouranos) INSTEAD!
+## ARCHIVED, GO TO [Ouranos](https://github.com/Blackjack200/Ouranos) INSTEAD OR MY FORK https://github.com/oryxel1/Ouranos!
 # The Other ViaBedrock.
 Allow older bedrock clients to join newer version (this is not [ViaBedrock](https://github.com/RaphiMC/ViaBedrock))
 - Currently, support: 1.21.110 -> 1.21.30 (that it lol.)
